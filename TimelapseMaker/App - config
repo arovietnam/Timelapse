@@ -1,0 +1,74 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<configuration>
+    <startup> 
+        <supportedRuntime version="v4.0" sku=".NETFramework,Version=v4.5" />
+    </startup>
+    <appSettings>
+      <add key="EvercamApiId" value=""/>
+      <add key="EvercamApiKey" value=""/>
+      <add key="UserId" value=""/>
+      <add key="CameraId" value=""/>
+      
+      <add key="FromDate" value="2015, 01, 16"/>
+      <add key="ToDate" value="2015, 08, 11"/>
+      <add key="FromHour" value="09"/>
+      <add key="FromMin" value="00"/>
+      <add key="FromSec" value="00"/>
+      <add key="ToHour" value="23"/>
+      <add key="ToMin" value="59"/>
+      <add key="ToSec" value="00"/>
+      <add key="TimeOfDay" value="10:00"/>
+      <add key="IntervalMin" value="1440"/>
+      <add key="Fps" value="1"/>
+      <add key="StartIndex" value="0"/>
+      <add key="MoveIndex" value="0"/>
+      
+      <add key="TimelapseId" value="261"/>
+      <add key="ConcatFileA" value="a.mp4"/>
+      <add key="ConcatFileB" value="b.mp4"/>
+      <add key="VideoFile" value="bennett.mp4"/>
+      <add key="VideoDir" value="e:\\"/>
+      <add key="ImagesDir" value="e:\\images\\"/>
+      <add key="ResizedDir" value="e:\\resized\\"/>
+      <add key="MoveDir" value=""/>
+      <add key="ToDir" value=""/>
+      
+      <add key="WatermarkFile" value=""/>
+      <add key="WatermarkPostion" value="-1"/>
+      <add key="WatermarkFontName" value="Arial" />
+      <add key="WatermarkFontSize" value="20" />
+      <add key="WatermarkFontColor" value="#ffffff" />
+      <add key="WatermarkFontOutline" value="#000000" />
+      <add key="WatermarkPrefix" value="c:\\timelapse\\website\\"/>
+      <add key="WatermarkMargin" value="5"/>
+      
+      <add key="BitRate" value="1000k"/>
+      <add key="Scale" value="-1:720"/>
+      
+      <add key="CropX" value="0"/>
+      <add key="CropY" value="0"/>
+      <add key="CropW" value="1920"/>
+      <add key="CropH" value="1080"/>
+      
+      <add key="ReindexImages" value="false"/>
+      <add key="MoveImages" value="false"/>
+      <add key="ConcatVideos" value="false"/>
+      <add key="DownloadImages" value="true"/>
+      <add key="MakeVideo" value="false"/>
+      <add key="ResizeImages" value="false"/>      
+      <add key="TimestampVideo" value="false"/>
+      <add key="WatermarkVideo" value="false"/>
+      <add key="CompressVideo" value="false"/>
+    
+      <add key="SiteServer" value=""/>
+      <add key="EmailSource" value="Timelapse Maker" />
+      <add key="SmtpEmail" value="" />
+      <add key="SmtpUser" value="" />
+      <add key="SmtpPassword" value="" />
+      <add key="SmtpServer" value="" />
+      <add key="SmtpServerPort" value="" />
+      <add key="DebugEmail" value="" />
+      <add key="EmailSubject" value="" />
+      <add key="EmailMessage" value="" />
+    </appSettings>
+</configuration>
