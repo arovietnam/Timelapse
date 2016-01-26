@@ -8,6 +8,7 @@ using BLL.Dao;
 using BLL.Entities;
 using BLL.Common;
 using EvercamV2;
+using System.Text;
 
 namespace Timelapser
 {
@@ -27,6 +28,7 @@ namespace Timelapser
         public static Camera Camera = new Camera();
         public static string UpPath;
         public static string DownPath;
+        public static string TsPath;
         public static string TempPath;
         public static bool Initialized;
         static Timelapse tl = new Timelapse();
@@ -39,10 +41,7 @@ namespace Timelapser
             //Utils.CopyTimelapsesToAzure();
 
             AppDomain.CurrentDomain.UnhandledException += CurrentDomainUnhandledException;
-            int tId = Convert.ToInt32(args[0]);
-            
-            // testing any timelapse
-            //int tId = 398;
+            int tId = 623; // Convert.ToInt32(args[0]);
             
             Evercam.SANDBOX = Settings.EvercamSandboxMode;
             Evercam = new Evercam(Settings.EvercamClientID, Settings.EvercamClientSecret, Settings.EvercamClientUri);
@@ -119,18 +118,22 @@ namespace Timelapser
 
                 UpPath = Path.Combine(FilePath, cleanCameraId, timelapse.ID.ToString());
                 DownPath = Path.Combine(FilePath, cleanCameraId, timelapse.ID.ToString(), "images");
+                TsPath = Path.Combine(FilePath, cleanCameraId, timelapse.ID.ToString(), "ts");
                 TempPath = Path.Combine(FilePath, cleanCameraId, timelapse.ID.ToString(), "temp");
 
-                if (!Directory.Exists(FfmpegCopyPath))
-                    Directory.CreateDirectory(FfmpegCopyPath);
+                //if (!Directory.Exists(FfmpegCopyPath))
+                //    Directory.CreateDirectory(FfmpegCopyPath);
                 if (!Directory.Exists(FilePath))
                     Directory.CreateDirectory(FilePath);
                 if (!Directory.Exists(UpPath))
                     Directory.CreateDirectory(UpPath);
                 if (!Directory.Exists(DownPath))
                     Directory.CreateDirectory(DownPath);
+                if (!Directory.Exists(TsPath))
+                    Directory.CreateDirectory(TsPath);
                 if (!Directory.Exists(TempPath))
                     Directory.CreateDirectory(TempPath);
+                CreateBashFile(timelapse.FPS);
 
                 Recorder recorder = new Recorder(timelapse);
                 recorder.Start();
@@ -163,6 +166,19 @@ namespace Timelapser
                 Console.WriteLine(DateTime.UtcNow + " " + x.Message);
                 Environment.Exit(0);
             }
+        }
+
+        protected static void CreateBashFile(int frame_per_sec)
+        {
+            var bash = new StringBuilder();
+            bash.AppendLine("#!/bin/bash");
+            var ffmpeg_command_480 = string.Format("ffmpeg -y -framerate 24 -i images/%d.jpg -c:v libx264 -pix_fmt yuv420p -profile:v baseline -level 2.1 -maxrate 500K -bufsize 2M -crf 18 -r {0} -g 30  -f hls -hls_time 9 -hls_list_size 0 -s 480x270 ts/480x270.m3u8", frame_per_sec);
+            var ffmpeg_command_640 = string.Format("ffmpeg -y -framerate 24 -i images/%d.jpg -c:v libx264 -pix_fmt yuv420p -profile:v baseline -level 3.1 -maxrate 1M -bufsize 3M -crf 18 -r {0} -g 72 -f hls -hls_time 9 -hls_list_size 0 -s 640x360 ts/640x360.m3u8", frame_per_sec);
+            var ffmpeg_command_1280 = string.Format("ffmpeg -y -framerate 24 -i images/%d.jpg -c:v libx264 -pix_fmt yuv420p -profile:v main -level 3.2 -maxrate 2M -bufsize 6M -crf 18 -r {0} -g 72 -f hls -hls_time 9 -hls_list_size 0 -s 1280x720 ts/1280x720.m3u8", frame_per_sec);
+            bash.AppendLine(ffmpeg_command_480);
+            bash.AppendLine(ffmpeg_command_640);
+            bash.AppendLine(ffmpeg_command_1280);
+            File.WriteAllText(Path.Combine(UpPath, "build.sh"), bash.ToString());
         }
 
         static void CurrentDomainUnhandledException(object sender, UnhandledExceptionEventArgs e)

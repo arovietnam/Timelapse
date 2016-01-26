@@ -16,6 +16,7 @@ namespace Timelapser
     public class Recorder
     {
         public string FfmpegExePath;
+        public string BashFile;
         bool fileError = false;
         int timeOutCount = 0;
         int timeOutLimit = Settings.TimeoutLimit;
@@ -41,13 +42,13 @@ namespace Timelapser
                 return;
             }
 
-            if (string.IsNullOrEmpty((FfmpegExePath = CopyFfmpeg())))
-            {
-                Console.WriteLine("Unable to create copy of FFMPEG.exe.");
-                Utils.TimelapseLog(timelapse, "Exiting... Unable to create copy of FFMPEG.exe.");
-                ExitProcess();
-                return;
-            }
+            //if (string.IsNullOrEmpty((FfmpegExePath = CopyFfmpeg())))
+            //{
+            //    Console.WriteLine("Unable to create copy of FFMPEG.exe.");
+            //    Utils.TimelapseLog(timelapse, "Exiting... Unable to create copy of FFMPEG.exe.");
+            //    ExitProcess();
+            //    return;
+            //}
             //// recording images sequential
             RecordTimelapse();
         }
@@ -100,6 +101,7 @@ namespace Timelapser
                     string tempMp4FileName = Path.Combine(Program.TempPath, timelapse.Code + ".mp4");
                     string tempVideoFileName = Path.Combine(Program.TempPath, "temp" + timelapse.Code + ".mp4");
                     string baseMp4FileName = Path.Combine(Program.TempPath, "base" + timelapse.Code + ".mp4");
+                    BashFile = Path.Combine(Program.UpPath, "build.sh");
 
                     if (!string.IsNullOrEmpty(timelapse.WatermarkImage))
                     {
@@ -124,7 +126,7 @@ namespace Timelapser
                                 Utils.TimelapseLog(timelapse, "<<< AddedLastImageToVideo");
                             }
                             else {
-                                CreateVideoFromImages(mp4IdFileName, baseMp4FileName);
+                                CreateVideoChunks(BashFile);
                                 Utils.TimelapseLog(timelapse, "<<< CreatedVideoFromImages");
                             }
                             File.Copy(mp4IdFileName, mp4CodeFileName, true);
@@ -145,12 +147,12 @@ namespace Timelapser
                     if (!string.IsNullOrEmpty(imageFile))
                     {
                         //// generates video source file and updates timelapse status to Processing
-                        if (!File.Exists(mp4IdFileName))
-                            GenerateVideoSingleImage(mp4IdFileName, baseMp4FileName, imageFile);
-                        else
-                            ConcatenateVideoSingleImage(mp4IdFileName, tempMp4FileName, baseMp4FileName, tempVideoFileName, imageFile);
+                        //if (!File.Exists(mp4IdFileName))
+                        //    GenerateVideoSingleImage(mp4IdFileName, baseMp4FileName, imageFile);
+                        //else
+                        //    ConcatenateVideoSingleImage(mp4IdFileName, tempMp4FileName, baseMp4FileName, tempVideoFileName, imageFile);
                         
-                        File.Copy(mp4IdFileName, mp4CodeFileName, true);
+                        //File.Copy(mp4IdFileName, mp4CodeFileName, true);
                     }
                     else
                     {
@@ -304,6 +306,23 @@ namespace Timelapser
                 }
             }
             return tempfile;
+        }
+
+        protected void CreateVideoChunks(string bashFile)
+        {
+            Utils.TimelapseLog(timelapse, ">>> CreateVideoFromImages(" + bashFile + ")");
+            string[] maxres = MAX_RES.Split(new char[] { ',' });
+            //if (Array.IndexOf(maxres, timelapse.CameraId.ToLower()) > 0)
+            RunBash(bashFile);
+            //else
+                //RunBash("-r " + timelapse.FPS + " -i " + Program.DownPath + @"\%00000d.jpg -c:v libx264 -r " + timelapse.FPS + " -profile:v main -preset slow -b:v 1000k -maxrate 1000k -bufsize 1000k -vf scale=-1:720 -pix_fmt yuv420p -y " + output);
+
+            //File.Copy(output, baseOutput, true);
+            //WatermarkVideo(baseOutput, output);
+
+            //TimelapseVideoInfo info = UpdateVideoInfo(output);
+            //Utils.TimelapseLog(timelapse, "<<< CreateVideoFromImages(" + output + ")");
+            //return info;
         }
 
         protected TimelapseVideoInfo CreateVideoFromImages(string output, string baseOutput)
@@ -486,6 +505,37 @@ namespace Timelapser
                 Utils.TimelapseLog(timelapse, "ERR: UpdateVideoInfo(" + movieName + "): " + Environment.NewLine + "Output: " + result);
 
                 return new TimelapseVideoInfo();
+            }
+        }
+
+        protected string RunBash(string parameters)
+        {
+            ProcessStartInfo start = new ProcessStartInfo();
+            start.FileName = Path.Combine(Program.FfmpegCopyPath, "bash.exe");
+            start.Arguments = parameters;
+            start.UseShellExecute = false;
+            start.RedirectStandardError = true;
+
+            Process process = new Process();
+            start.CreateNoWindow = true;
+            process.StartInfo = start;
+            process.Start();
+
+            process.PriorityClass = ProcessPriorityClass.Idle;
+            process.Refresh();
+
+            string output = process.StandardError.ReadToEnd();
+
+            try
+            {
+                if (!process.HasExited && process.Responding)
+                    Utils.KillProcess(process.Id, 0);
+                return "";
+            }
+            catch (Exception x)
+            {
+                Utils.TimelapseLog(timelapse, "ERR: RunBash(" + parameters + ") " + x);
+                return x.Message;
             }
         }
 
