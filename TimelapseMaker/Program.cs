@@ -63,14 +63,14 @@ namespace TimelapseMaker
             {
                 string s = DateTime.UtcNow.ToString();
                 int count = Tasks.ReindexImages(imagesDir, startIndex);
-                BLL.Common.Utils.SendMail("Timelapse Images (" + CameraId + ":" + timelapseId + ")", "Reindexed: " + count + Environment.NewLine + "Started: " + s + Environment.NewLine + "Finished: " + DateTime.UtcNow, BLL.Common.Settings.DebugEmail);
+                //BLL.Common.Utils.SendMail("Timelapse Images (" + CameraId + ":" + timelapseId + ")", "Reindexed: " + count + Environment.NewLine + "Started: " + s + Environment.NewLine + "Finished: " + DateTime.UtcNow, BLL.Common.Settings.DebugEmail);
             }
 
             if (moveImages == "true")
             {
                 string s = DateTime.UtcNow.ToString();
                 int count = Tasks.MoveImages(moveDir, toDir, moveIndex);
-                BLL.Common.Utils.SendMail("Timelapse Images (" + CameraId + ":" + timelapseId + ")", "Moved: " + count + Environment.NewLine + "Started: " + s + Environment.NewLine + "Finished: " + DateTime.UtcNow, BLL.Common.Settings.DebugEmail);
+                //BLL.Common.Utils.SendMail("Timelapse Images (" + CameraId + ":" + timelapseId + ")", "Moved: " + count + Environment.NewLine + "Started: " + s + Environment.NewLine + "Finished: " + DateTime.UtcNow, BLL.Common.Settings.DebugEmail);
             }
 
             if (concatVideos == "true")

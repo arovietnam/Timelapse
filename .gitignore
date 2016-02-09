@@ -38,6 +38,8 @@ local.properties
 
 # User-specific files
 *.suo
+*.sln
+*.csproj
 *.user
 *.config
 *.sln.docstates
