@@ -101,22 +101,6 @@ namespace Timelapser
                     }
                 }
 
-                Camera = Evercam.GetCamera(timelapse.CameraId);
-                
-                if (Camera == null || string.IsNullOrEmpty(Camera.ID))
-                {
-                    TimelapseDao.UpdateStatus(timelapse.Code, TimelapseStatus.NotFound, "Camera details could not be retreived from Evercam", timelapse.TimeZone);
-                    ExitProcess("Camera not found. ID = " + timelapse.CameraId);
-                }
-                if (!Camera.IsOnline)
-                {
-                    TimelapseDao.UpdateStatus(timelapse.Code, TimelapseStatus.Failed, "Camera went offline", timelapse.TimeZone);
-                    ExitProcess("Camera is offline. ID = " + timelapse.CameraId);
-                }
-                
-                Console.Title = "Timelapse (#" + tId + ") - Camera (#" + cleanCameraId + ")";
-                Console.WriteLine("Running Timelapse (#" + tId + ") - Camera (#" + cleanCameraId + ")");
-
                 UpPath = Path.Combine(FilePath, cleanCameraId, timelapse.ID.ToString());
                 DownPath = Path.Combine(FilePath, cleanCameraId, timelapse.ID.ToString(), "images");
                 TsPath = Path.Combine(FilePath, cleanCameraId, timelapse.ID.ToString(), "ts");
@@ -139,6 +123,34 @@ namespace Timelapser
                 CreateBashFile(timelapse.FPS, DownPath, TsPath, chunkSize, timelapse.SnapsInterval);
                 
                 Recorder recorder = new Recorder(timelapse);
+
+                string bashFile = Path.Combine(Program.UpPath, "build.sh");
+                DirectoryInfo imagesDirectory = new DirectoryInfo(Program.DownPath);
+                int imagesCount = imagesDirectory.GetFiles("*.jpg").Length;
+                DirectoryInfo ts = new DirectoryInfo(TsPath);
+                int hasTsFiles = ts.GetFiles("*.*").Length;
+                if (hasTsFiles == 0 && imagesCount > 24)
+                {
+                    recorder.CreateVideoChunks(bashFile);
+                    Utils.TimelapseLog(timelapse, "Program <<< CreateVideoChunks");
+                }
+
+                Camera = Evercam.GetCamera(timelapse.CameraId);
+
+                if (Camera == null || string.IsNullOrEmpty(Camera.ID))
+                {
+                    TimelapseDao.UpdateStatus(timelapse.Code, TimelapseStatus.NotFound, "Camera details could not be retreived from Evercam", timelapse.TimeZone);
+                    ExitProcess("Camera not found. ID = " + timelapse.CameraId);
+                }
+                if (!Camera.IsOnline)
+                {
+                    TimelapseDao.UpdateStatus(timelapse.Code, TimelapseStatus.Failed, "Camera went offline", timelapse.TimeZone);
+                    ExitProcess("Camera is offline. ID = " + timelapse.CameraId);
+                }
+
+                Console.Title = "Timelapse (#" + tId + ") - Camera (#" + cleanCameraId + ")";
+                Console.WriteLine("Running Timelapse (#" + tId + ") - Camera (#" + cleanCameraId + ")");
+                
                 recorder.Start();
             }
             catch (Exception x)

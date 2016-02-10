@@ -112,7 +112,15 @@ namespace Timelapser
                     //    if (File.Exists(Path.Combine(Program.TimelapseExePath, Program.WatermarkFile)))
                     //        File.Copy(Path.Combine(Program.TimelapseExePath, Program.WatermarkFile), Path.Combine(Program.UpPath, Program.WatermarkFileName), true);
                     //}
-                    
+
+                    if (Utils.StopTimelapse(timelapse))
+                    {
+                        TimelapseDao.UpdateStatus(timelapse.Code, (TimelapseStatus)timelapse.Status, timelapse.StatusTag, timelapse.TimeZone);
+                        ExitProcess();
+                    }
+                    Utils.TimelapseLog(timelapse, "Timelapser Initialized @ " + Utils.ConvertFromUtc(DateTime.UtcNow, timelapse.TimeZone) + " (" + timelapse.FromDT + "-" + timelapse.ToDT + ")");
+                    string imageFile = DownloadSnapshot();
+
                     // timelapse recorder is just initializing
                     if (!Program.Initialized)
                     {
@@ -120,11 +128,22 @@ namespace Timelapser
                         DirectoryInfo ts = new DirectoryInfo(Program.TsPath);
                         index = imagesCount;
                         int hasTsFiles = ts.GetFiles("*.*").Length;
-                        if (hasTsFiles == 0 && CalculateChunckCreateTime(imagesCount, timelapse.SnapsInterval, timelapse.SnapsCount))
+                        if (hasTsFiles == 0 && imagesCount > 25) //CalculateChunckCreateTime(imagesCount, timelapse.SnapsInterval, timelapse.SnapsCount)
                         {
                             CreateVideoChunks(BashFile);
-                            Utils.TimelapseLog(timelapse, "<<< CreateVideoChunks");
-                            
+                            Utils.TimelapseLog(timelapse, "Initial Stream <<< CreateVideoChunks");
+                        }
+                        else if (hasTsFiles == 0 && imagesCount > 0 && imagesCount < 25)
+                        {
+                            string sourceFile = Path.Combine(Program.DownPath, (index - 1) + ".jpg");
+                            for (int i = index; i < 24; i++)
+                            {
+                                File.Copy(sourceFile, Path.Combine(Program.DownPath, i + ".jpg"), true);
+                            }
+                            CreateVideoChunks(BashFile);
+                            Utils.TimelapseLog(timelapse, "Initial Stream one repeated image<<< CreateVideoChunks");
+                            imagesCount = imagesDirectory.GetFiles("*.jpg").Length;
+                            index = imagesCount;
                         }
                         else if (CalculateChunckCreateTime(imagesCount, timelapse.SnapsInterval, timelapse.SnapsCount))
                         {
@@ -133,19 +152,8 @@ namespace Timelapser
                             Utils.TimelapseLog(timelapse, "<<< CreateNewVideoChunk");
                         }
                         chunkIndex = GetTsFileIndex(Program.TsPath);
-                        if (CalculateChunckCreateTime(imagesCount, timelapse.SnapsInterval, timelapse.SnapsCount))
-                        {
-                            timelapse = TimelapseDao.Get(timelapse.Code);
-                            Program.Initialized = true;
-                            Utils.TimelapseLog(timelapse, "Timelapser Initialized @ " + Utils.ConvertFromUtc(DateTime.UtcNow, timelapse.TimeZone) + " (" + timelapse.FromDT + "-" + timelapse.ToDT + ")");
-                        }
-                    }
-                    
-                    string imageFile = DownloadSnapshot();
-                    if (Utils.StopTimelapse(timelapse))
-                    {
-                        TimelapseDao.UpdateStatus(timelapse.Code, (TimelapseStatus)timelapse.Status, timelapse.StatusTag, timelapse.TimeZone);
-                        ExitProcess();
+                        timelapse = TimelapseDao.Get(timelapse.Code);
+                        Program.Initialized = true;
                     }
                     
                     if (!string.IsNullOrEmpty(imageFile))
@@ -331,7 +339,7 @@ namespace Timelapser
             return tempfile;
         }
 
-        protected void CreateVideoChunks(string bashFile)
+        public void CreateVideoChunks(string bashFile)
         {
             Utils.TimelapseLog(timelapse, ">>> CreateVideoChunks(" + bashFile + ")");
             string[] maxres = MAX_RES.Split(new char[] { ',' });
@@ -793,7 +801,6 @@ namespace Timelapser
 
         protected void ExitProcess()
         {
-            return;
             try
             {
                 string PathDest = Path.Combine(Program.FfmpegCopyPath, "ffmpeg_" + timelapse.ID + ".exe");
