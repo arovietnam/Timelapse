@@ -81,10 +81,10 @@ var Index = function () {
     var handleLoginSection = function () {
         /* ENABLE FOR TESTING ONLY */
         //localStorage.setItem("oAuthTokenType", "bearer");
-        //localStorage.setItem("oAuthToken", "6ec26b9eb6d125c9e9c8fbcc38d3a676");
+        //localStorage.setItem("oAuthToken", "144dcb4621ac4352a8f3ada2eb44ded8");
         //localStorage.setItem("tokenExpiry", "315568999");
-        //localStorage.setItem("timelapseUserId", "shakeelanjum")
-        //localStorage.setItem("timelapseUsername", "Shakeel Anjum");
+        //localStorage.setItem("timelapseUserId", "vinniequinn")
+        //localStorage.setItem("timelapseUsername", "Vinnie Quinn");
         /* --------- END --------- */
         if (localStorage.getItem("oAuthToken") != null && localStorage.getItem("oAuthToken") != undefined) {
             getMyTimelapse();
@@ -423,24 +423,18 @@ var Index = function () {
             data: o,
             dataType: 'json',
             ContentType: apiContentType,//'application/json; charset=utf-8',
-            /*beforeSend: function (xhrObj) {
-                xhrObj.setRequestHeader("Authorization", "Basic " + localStorage.getItem("oAuthToken"));
-            },*/
             success: function(data) {
                 $("#divAlert" + timelapseId + " span").html('Timelapse saved.');
                 if ($("#txtCameraCode0").val() != "")
                     $("#tab" + $("#txtCameraCode0").val()).remove();
-                //if (timelapseId == "0") {
                 $("#divTimelapses").prepend(getHtml(data));
+                getVideoPlayer(data.camera_id, data.code, data.mp4_url, data.jpg_url, data.id, data.watermark_file);
                 $("#newTimelapse").slideUp(500, function() { $("#newTimelapse").html(""); });
                 $("#lnNewTimelapse").show();
                 $("#lnNewTimelapseCol").hide();
                 if ($(".timelapseContainer").css("display") == "none")
                     $(".timelapseContainer").fadeIn();
                 $("#divContainer" + data.id).slideDown(500);
-                /*} else {
-                    $("#timelapseTitle" + timelapseId).html($("#txtTitle" + timelapseId).val());
-                }*/
 
                 ApiAction = 'POST';
                 apiContentType = 'application/json; charset=utf-8';
@@ -608,9 +602,6 @@ var Index = function () {
             url: timelapseApiUrl + "/users/" + localStorage.getItem("timelapseUserId"),
             dataType: 'json',
             contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
-            /*beforeSend: function (xhrObj) {
-                xhrObj.setRequestHeader("Authorization", "Basic " + localStorage.getItem("oAuthToken"));
-            },*/
             success: function(data) {
                 if (data.length == 0) {
                     $("#divTimelapses").html('');
@@ -619,12 +610,12 @@ var Index = function () {
                     var count = 1;
                     var html = '';
                     for (var i = 0; i < data.length; i++) {
-                        html += getHtml(data[i]);
+                        var timelapse = data[i];
+                        $("#divTimelapses").append(getHtml(timelapse));
+                        getVideoPlayer(timelapse.camera_id, timelapse.code, timelapse.mp4_url, timelapse.jpg_url, timelapse.id, timelapse.watermark_file);
                     }
-                    $("#divTimelapses").html(html);
                     $(".timelapseContainer").fadeIn();
                     $("#divLoadingTimelapse").fadeOut();
-
                     $('.timerange').timepicker({
                         minuteStep: 1,
                         showSeconds: false,
@@ -635,19 +626,12 @@ var Index = function () {
                     var dates = $(".daterange").datepicker({
                         format: 'dd/mm/yyyy',
                         minDate: new Date()
-                        /*onSelect: function (selectedDate) {
-                            var option = this.id.indexOf("txtFromDateRange") == 0 ? "minDate" : "maxDate",
-                                instance = $(this).data("datepicker"),
-                                date = $.datepicker.parseDate(instance.settings.dateFormat || $.datepicker._defaults.dateFormat, selectedDate, instance.settings);
-                            dates.not(this).datepicker("option", option, date);
-                        }*/
                     });
                     $("pre").snippet("html", { style: "whitengrey", clipboard: "assets/scripts/ZeroClipboard.swf", showNum: false });
                 }
             },
             error: function(xhr, textStatus) {
                 $("#divTimelapses").html('');
-                //$("#divLoadingTimelapse").show();
                 $("#divLoadingTimelapse").html('You have not created any timelapses. <a href="#">Click</a> to create one.');
             }
         });
@@ -673,16 +657,22 @@ var Index = function () {
     var getVideoPlayer = function (cameraId, timelapseCode, mp4, jpg, timelapseId, logoFile) {
         var img = new Image();
         img.onerror = function (evt) {
-            var html = '<video data-setup="{}" poster="assets/img/timelapse.jpg" preload="none" controls="" class="video-js vjs-default-skin video-bg-width" id="video-control-' + timelapseId + '">';
-            html += '<source type="video/mp4" src="' + mp4 + '"></source>';
+            var html = "<video data-setup='{ \"playbackRates\": [0.06, 0.12, 0.25, 0.5, 1, 1.5, 2, 2.5, 3] }' poster=\"assets/img/timelapse.jpg\" preload=\"none\" controls class=\"video-js vjs-default-skin video-bg-width\" id=\"video-control-" + timelapseId + "\">";
+            html += '<source type="application/x-mpegURL" src="http://timelapse.evercam.io/timelapses/' + cameraId + '/' + timelapseId + '/timelapse.m3u8"></source>';
             html += '</video>';
             $("#divVideoContainer" + timelapseId).html(html);
+            videojs("video-control-" + timelapseId).ready(function () {
+                //this.playbackRate(0.25);
+            });
         };
         img.onload = function (evt) {
-            var html = '<video data-setup="{}" poster="' + jpg + '" preload="none" controls="" class="video-js vjs-default-skin video-bg-width" id="video-control-' + timelapseId + '">';
-            html += '<source type="video/mp4" src="' + mp4 + '"></source>';
+            var html = "<video data-setup='{ \"playbackRates\": [0.06, 0.12, 0.25, 0.5, 1, 1.5, 2, 2.5, 3] }' poster=\"" + jpg + "\" preload=\"none\" controls class=\"video-js vjs-default-skin video-bg-width\" id=\"video-control-" + timelapseId + "\">";
+            html += '<source type="application/x-mpegURL" src="http://timelapse.evercam.io/timelapses/' + cameraId + '/' + timelapseId + '/timelapse.m3u8"></source>';
             html += '</video>';
             $("#divVideoContainer" + timelapseId).html(html);
+            videojs("video-control-" + timelapseId).ready(function () {
+                //this.playbackRate(0.25);
+            });
         };
         img.src = jpg;
     };
@@ -732,19 +722,12 @@ var Index = function () {
         html += '          <div class="row-fluid box-header-padding" data-val="' + data.id + '">';
         html += '              <div id="timelapseTitle' + data.id + '" class="timelapse-labelhd timelapse-label">' + data.title + '&nbsp;<span class="timelapse-camera-name">' + cameraName + '</span></div>';
         html += '              <div id="timelapseStatus' + data.code + '" class="timelapse-recordhd timelapse-label-status text-right">';
-        //if (data.status == 1)
-        //    html += '               <div class="timelapse-recording"></div>';
-        //else if (data.status == 3 || data.status == 2 || data.status == 0)
-        //    html += '               <div class="timelapse-paused"></div>';
         html += getTimeLapseStatus(data.status);
         html += '               </div>';
         html += '          </div>';
-        //html += '          <br />';
         html += '          <div id="divContainer' + data.id + '" class="row-fluid box-content-padding hide">';
         html += '              <div id="divVideoContainer' + data.id + '" class="span6">';
-        //html += '                  <iframe style="width:100%; border:0;height:360px;" src="loadvideo.html?id=' + data.camera_id + '&mp4=' + data.mp4_url + '&webm=' + data.webm_url + '&jpg=' + data.jpg_url + '" frameborder="0" allowfullscreen></iframe>';
-
-        getVideoPlayer(data.camera_id, data.code, data.mp4_url, data.jpg_url, data.id, data.watermark_file);
+        //call videojs
         html += '                  <video data-setup="{}" preload="none" controls="" class="video-js vjs-default-skin video-bg-width" id="vde4b3u05e9y">';
         html += '                   <source type="video/mp4" src="' + data.mp4_url + '"></source>';
         html += '                  </video>';
@@ -769,9 +752,9 @@ var Index = function () {
         html += '                                         <div class="timelapse-content-box">';
         html += '                                           <table class="table table-full-width" style="margin-bottom:0px;">';
         html += '                                           <tr><td class="span2">Total Snapshots: </td><td class="span2" id="tdSnapCount' + data.code + '">' + data.snaps_count + '</td><td style="width:25px;text-align:right;" align="right"><img id="imgRef' + data.id + '" style="cursor:pointer;height:27px;" data-val="' + data.code + '" class="refreshStats" src="assets/img/refres-tile.png" alt="Refresh Stats" title="Refresh Stats"></td></tr>';
-        html += '                                           <tr><td class="span2">Timelapse Length: </td><td class="span3" colspan="2"  id="tdDuration' + data.code + '">' + data.duration + '</td></tr>';
-        html += '                                           <tr><td class="span2">MP4 File Size: </td><td class="span3" colspan="2"  id="tdFileSize' + data.code + '">' + data.file_size + '</td></tr>';
-        html += '                                           <tr><td class="span2">Playback Speed: </td><td class="span3" colspan="2">' + data.fps + ' fps</td></tr>';
+        //html += '                                           <tr><td class="span2">Timelapse Length: </td><td class="span3" colspan="2"  id="tdDuration' + data.code + '">' + data.duration + '</td></tr>';
+        html += '                                           <tr><td class="span2">File Size: </td><td class="span3" colspan="2"  id="tdFileSize' + data.code + '">' + data.file_size + '</td></tr>';
+        //html += '                                           <tr><td class="span2">Playback Speed: </td><td class="span3" colspan="2">' + data.fps + ' fps</td></tr>';
         html += '                                           <tr><td class="span2">Resolution: </td><td class="span3" colspan="2"  id="tdResolution' + data.code + '">' + (data.snaps_count == 0 ? '640x480' : data.resolution) + 'px</td></tr>';
         html += '                                           <tr><td class="span2">Created At: </td><td class="span3" colspan="2"  id="tdCreated' + data.code + '">' + (data.created_date) + '</td></tr>'; //data.snaps_count == 0 ? getDate() : 
         html += '                                           <tr><td class="span2">Last Snapshot At: </td><td class="span3" colspan="2"  id="tdLastSnapDate' + data.code + '">' + (data.snaps_count == 0 ? '---' : data.last_snap_date) + '</td></tr>';
@@ -780,11 +763,8 @@ var Index = function () {
         html += '                                       </div></div>';
 
         html += '                                       <div id="embedcode' + data.id + '" class="row-fluid hide">';
-        html += '                                           <pre id="code' + data.code + '" class="pre-width">&lt;video class="video-js vjs-default-skin video-bg-width" controls preload="none"';
-        html += ' poster="' + data.jpg_url + '" data-setup="{}"&gt;<br/>';
-        html += '&lt;source src="' + data.mp4_url + '" type="video/mp4" /&gt;<br/>';
-        //html += '&lt;source src="' + data.webm_url + '" type="video/webm" /&gt;<br/>';
-        html += '&lt;/video&gt;</pre>';
+        html += '                                           <pre id="code' + data.code + '" class="pre-width">&lt;div id="hls-video"&gt;&lt;/div&gt;<br/>';
+        html += '&lt;script src="http://timelapse.evercam.io/timelapse_widget.js" class="' + data.camera_id + ' ' + data.id + ' ' + data.code + '"&gt;&lt;/script&gt;</pre><br/>';
         html += '                                       </div>';
 
         html += '                                       <div id="setting' + data.id + '" class="row-fluid hide">';

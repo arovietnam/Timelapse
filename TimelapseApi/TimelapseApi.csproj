@@ -41,24 +41,24 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="DocsByReflection">
-      <HintPath>..\..\Timelapse\TimelapseApi\bin\DocsByReflection.dll</HintPath>
+      <HintPath>..\..\..\dotnet\DocsByReflection.dll</HintPath>
     </Reference>
     <Reference Include="EvercamV2, Version=2.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>bin\EvercamV2.dll</HintPath>
+      <HintPath>..\..\..\dotnet\EvercamV2.dll</HintPath>
     </Reference>
     <Reference Include="log4net">
-      <HintPath>..\..\Timelapse\TimelapseApi\bin\log4net.dll</HintPath>
+      <HintPath>..\..\..\dotnet\log4net.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="Microsoft.Web.Services3">
-      <HintPath>..\..\Timelapse\TimelapseApi\bin\Microsoft.Web.Services3.dll</HintPath>
+      <HintPath>..\..\..\dotnet\Microsoft.Web.Services3.dll</HintPath>
     </Reference>
     <Reference Include="MongoDB.Bson">
-      <HintPath>..\..\Timelapse\TimelapseApi\bin\MongoDB.Bson.dll</HintPath>
+      <HintPath>..\..\..\dotnet\MongoDB.Bson.dll</HintPath>
     </Reference>
     <Reference Include="MongoDB.Driver">
-      <HintPath>..\..\Timelapse\TimelapseApi\bin\MongoDB.Driver.dll</HintPath>
+      <HintPath>..\..\..\dotnet\MongoDB.Driver.dll</HintPath>
     </Reference>
     <Reference Include="RestSharp">
       <HintPath>..\..\Timelapse\TimelapseApi\bin\RestSharp.dll</HintPath>
@@ -70,7 +70,7 @@
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.ServiceModel" />
     <Reference Include="System.Web.Cors">
-      <HintPath>..\..\Timelapse\TimelapseApi\bin\System.Web.Cors.dll</HintPath>
+      <HintPath>..\..\..\dotnet\System.Web.Cors.dll</HintPath>
     </Reference>
     <Reference Include="System.Web.Entity" />
     <Reference Include="System.Web.ApplicationServices" />
@@ -78,11 +78,11 @@
     <Reference Include="System.Core" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="System.Web.Http.Cors">
-      <HintPath>..\..\WebApiV1\WebApi\bin\System.Web.Http.Cors.dll</HintPath>
+      <HintPath>..\..\..\dotnet\System.Web.Http.Cors.dll</HintPath>
     </Reference>
     <Reference Include="System.Web.Optimization, Version=1.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>bin\System.Web.Optimization.dll</HintPath>
+      <HintPath>..\..\..\dotnet\System.Web.Optimization.dll</HintPath>
     </Reference>
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Web" />

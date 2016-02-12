@@ -34,11 +34,11 @@
   <ItemGroup>
     <Reference Include="EvercamV2, Version=2.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>bin\Debug\EvercamV2.dll</HintPath>
+      <HintPath>..\..\..\EvercamV2.dll</HintPath>
     </Reference>
     <Reference Include="NodaTime, Version=1.3.0.0, Culture=neutral, PublicKeyToken=4226afe0d9b296d1, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>bin\Debug\NodaTime.dll</HintPath>
+      <HintPath>..\..\..\NodaTime.dll</HintPath>
     </Reference>
     <Reference Include="RestSharp">
       <HintPath>..\TimelapseApi\bin\RestSharp.dll</HintPath>

@@ -191,8 +191,8 @@ namespace TimelapseMaker
 
                             DateTime datetime = Utility.ToWindowsDateTime(snap.CreatedAt);
                             DateTime stamp = Utils.ConvertFromUtc(datetime, camera.Timezone);
-                            if (timestamp == "true")
-                                Utils.TimestampImage(data, stamp.ToString(), 2);
+                            //if (timestamp == "true")
+                            //    Utils.TimestampImage(data, stamp.ToString(), 2);
 
                             Console.WriteLine(index + " : " + snap.CreatedAt + " = " + stamp);
                             break;
@@ -239,8 +239,8 @@ namespace TimelapseMaker
                     {
                         data = snap.ToBytes();
                         
-                        if (timestamp == "true")
-                            data = Utils.TimestampImage(data, snaptime.ToString(), Settings.WatermarkPostion);
+                        //if (timestamp == "true")
+                        //    data = Utils.TimestampImage(data, snaptime.ToString(), Settings.WatermarkPostion);
 
                         Console.WriteLine(index + " : " + snap.CreatedAt + " = " + snaptime);
 

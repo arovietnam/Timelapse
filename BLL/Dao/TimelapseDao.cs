@@ -608,7 +608,7 @@ namespace BLL.Dao
                 cmd.Parameters.Add(p1);
                 Connection.OpenConnection();
                 cmd.Connection = Connection.DbConnection;
-                long result = (long)cmd.ExecuteScalar();
+                long result = (int)cmd.ExecuteScalar();
                 Connection.CloseConnection();
                 cmd.Dispose();
                 return result;
@@ -617,6 +617,31 @@ namespace BLL.Dao
             {
                 Utils.FileLog("TimelapseDao UpdateSnapsCount(string code, int snaps) " + ex.Message);
                 return 0;
+            }
+            finally
+            { Connection.CloseConnection(); }
+        }
+
+        public static void ResetSnapsCount(string code, long snaps)
+        {
+            string query = @"UPDATE [dbo].[Timelapses] " +
+                       "SET [SnapsCount] = @Snaps " +
+                       "OUTPUT INSERTED.SnapsCount " +
+                       "WHERE (Code = '" + code + "')";
+            try
+            {
+                var p1 = new SqlParameter("@Snaps", (int)snaps);
+                var cmd = new SqlCommand { CommandText = query, CommandType = CommandType.Text };
+                cmd.Parameters.Add(p1);
+                Connection.OpenConnection();
+                cmd.Connection = Connection.DbConnection;
+                cmd.ExecuteNonQuery();
+                Connection.CloseConnection();
+                cmd.Dispose();
+            }
+            catch (Exception ex)
+            {
+                Utils.FileLog("TimelapseDao UpdateSnapsCount(string code, int snaps) " + ex.Message);
             }
             finally
             { Connection.CloseConnection(); }
