@@ -78,6 +78,7 @@ namespace TimelapseAppService
                     {
                         if (timelapse.Status == (int)TimelapseStatus.NotFound)
                         {
+                            Utils.FileLog("Timelapse NotFount: " + timelapse.ID);
                             continue;
                         }
 
@@ -102,6 +103,10 @@ namespace TimelapseAppService
                         {
                             Utils.FileLog("Kill: Timelapse#" + timelapse.ID);
                             Utils.KillProcess(pid * -1, timelapse.ID);
+                        }
+                        else
+                        {
+                            Utils.FileLog("Exit Timelapse without any action: " + timelapse.ID);
                         }
                     }
                     catch (Exception x)
@@ -150,6 +155,7 @@ namespace TimelapseAppService
                         _timelapseInfos[timelapse.ID] = tpi;
                     else
                         _timelapseInfos.Add(timelapse.ID, tpi);
+                    Utils.FileLog("Start Timelapse: " + timelapse.ID);
                 }
                 else
                 {

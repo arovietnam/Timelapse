@@ -105,13 +105,6 @@ namespace Timelapser
                     string baseMp4FileName = Path.Combine(Program.TempPath, "base" + timelapse.Code + ".mp4");
                     BashFile = Path.Combine(Program.UpPath, "build.sh");
                     DirectoryInfo imagesDirectory = new DirectoryInfo(Program.DownPath);
-                    int imagesCount = imagesDirectory.GetFiles("*.jpg").Length;
-                    //if (!string.IsNullOrEmpty(timelapse.WatermarkImage))
-                    //{
-                    //    Utils.DoDownload(timelapse.WatermarkImage, Path.Combine(Program.TimelapseExePath, Program.WatermarkFile));
-                    //    if (File.Exists(Path.Combine(Program.TimelapseExePath, Program.WatermarkFile)))
-                    //        File.Copy(Path.Combine(Program.TimelapseExePath, Program.WatermarkFile), Path.Combine(Program.UpPath, Program.WatermarkFileName), true);
-                    //}
 
                     if (Utils.StopTimelapse(timelapse))
                     {
@@ -120,15 +113,15 @@ namespace Timelapser
                     }
                     Utils.TimelapseLog(timelapse, "Timelapser Initialized @ " + Utils.ConvertFromUtc(DateTime.UtcNow, timelapse.TimeZone) + " (" + timelapse.FromDT + "-" + timelapse.ToDT + ")");
                     string imageFile = DownloadSnapshot();
-
+                    int imagesCount = imagesDirectory.GetFiles("*.jpg").Length;
+                    index = imagesCount;
                     // timelapse recorder is just initializing
                     if (!Program.Initialized)
                     {
                         Utils.TimelapseLog(timelapse, "<<< Initialized: images_count:" + imagesCount + ", Interval:" + timelapse.SnapsInterval + ", Snapshot Count:" + timelapse.SnapsCount);
                         DirectoryInfo ts = new DirectoryInfo(Program.TsPath);
-                        index = imagesCount;
                         int hasTsFiles = ts.GetFiles("*.*").Length;
-                        if (hasTsFiles == 0 && imagesCount > 25) //CalculateChunckCreateTime(imagesCount, timelapse.SnapsInterval, timelapse.SnapsCount)
+                        if (hasTsFiles == 0 && imagesCount > 25)
                         {
                             CreateVideoChunks(BashFile);
                             Utils.TimelapseLog(timelapse, "Initial Stream <<< CreateVideoChunks");
@@ -151,9 +144,12 @@ namespace Timelapser
                             CreateNewVideoChunk(BashFile, timelapse.SnapsCount);
                             Utils.TimelapseLog(timelapse, "<<< CreateNewVideoChunk");
                         }
-                        chunkIndex = GetTsFileIndex(Program.TsPath);
-                        timelapse = TimelapseDao.Get(timelapse.Code);
-                        Program.Initialized = true;
+                        if (hasTsFiles > 0)
+                        {
+                            chunkIndex = GetTsFileIndex(Program.TsPath);
+                            timelapse = TimelapseDao.Get(timelapse.Code);
+                            Program.Initialized = true;
+                        }
                     }
                     
                     if (!string.IsNullOrEmpty(imageFile))
@@ -279,7 +275,7 @@ namespace Timelapser
                         //// will resize the image and rename as source file. e.g. code.jpg
                         
                         //// No more resizing... only create <CODE>.jpg file for poster from given file and logo
-                        //MakePoster(tempfile);
+                        MakePoster(tempfile);
                         timeOutCount = 0;
                         index++;
 
@@ -772,10 +768,10 @@ namespace Timelapser
             {
                 string poster = Path.Combine(Program.UpPath, timelapse.Code + ".jpg");
                 File.Copy(filename, poster, true);
-                if (File.Exists(Path.Combine(Program.UpPath, Program.WatermarkFileName)))
-                    Utils.WatermarkImage(filename, poster, Path.Combine(Program.UpPath, Program.WatermarkFileName), timelapse.WatermarkPosition);
-                else
-                    Utils.TimelapseLog(timelapse, "Watermark not found at " + Path.Combine(Program.UpPath, Program.WatermarkFile));
+                //if (File.Exists(Path.Combine(Program.UpPath, Program.WatermarkFileName)))
+                //    Utils.WatermarkImage(filename, poster, Path.Combine(Program.UpPath, Program.WatermarkFileName), timelapse.WatermarkPosition);
+                //else
+                //    Utils.TimelapseLog(timelapse, "Watermark not found at " + Path.Combine(Program.UpPath, Program.WatermarkFile));
             }
             catch (Exception x)
             {
