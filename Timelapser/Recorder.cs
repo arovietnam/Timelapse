@@ -798,7 +798,7 @@ namespace Timelapser
         {
             try
             {
-                string PathDest = Path.Combine(Program.FfmpegCopyPath, "ffmpeg_" + timelapse.ID + ".exe");
+                /*string PathDest = Path.Combine(Program.FfmpegCopyPath, "ffmpeg_" + timelapse.ID + ".exe");
                 try
                 {
                     //// Deletes timelapser copy of ffmpeg_id.exe
@@ -814,8 +814,9 @@ namespace Timelapser
                 // try killing if still exists
                 Utils.TimelapseLog(timelapse, "KillProcess on Exit: ffmpeg_" + timelapse.ID);
                 Utils.KillProcess("ffmpeg_" + timelapse.ID);
-
+                */
                 Environment.Exit(0);
+                Utils.TimelapseLog(timelapse, "KillProcess on Exit: Timelapse ID: " + timelapse.ID);
             }
             catch (Exception x)
             {
