@@ -28,7 +28,8 @@ namespace BLL.Common
         Scheduled = 3,
         Stopped = 4,
         NotFound = 5,
-        Expired = 6
+        Expired = 6,
+        Paused = 7
     }
 
     public enum TimelapseLogType

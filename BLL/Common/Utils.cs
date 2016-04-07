@@ -129,6 +129,12 @@ namespace BLL.Common
         /// <returns></returns>
         public static bool StartTimelapse(Timelapse timelapse)
         {
+            if (timelapse.Status == (int)TimelapseStatus.NotFound)
+            {
+                timelapse.StatusTag = "Camera not found";
+                FileLog("Utils.StartTimelapse#" + timelapse.ID + " - Start Not Found");
+                return true;
+            }
             if (timelapse.Status == (int)TimelapseStatus.Failed)
             { 
                 timelapse.StatusTag = "Camera not accessible";
@@ -203,12 +209,12 @@ namespace BLL.Common
         /// <returns></returns>
         public static bool StopTimelapse(Timelapse timelapse)
         {
-            if (timelapse.Status == (int)TimelapseStatus.NotFound)
-            { 
-                timelapse.StatusTag = "Camera details not found";
-                FileLog("Utils.StopTimelapse#" + timelapse.ID + " - Stop Recording Not Found");
-                return true; 
-            }
+            //if (timelapse.Status == (int)TimelapseStatus.NotFound)
+            //{ 
+            //    timelapse.StatusTag = "Camera details not found";
+            //    FileLog("Utils.StopTimelapse#" + timelapse.ID + " - Stop Recording Not Found");
+            //    return true; 
+            //}
 
             //if (timelapse.Status == (int)TimelapseStatus.Failed)
             //{ 
@@ -224,12 +230,12 @@ namespace BLL.Common
                 return true; 
             }
 
-            //if (timelapse.Status == (int)TimelapseStatus.Expired)
-            //{ 
-            //    timelapse.StatusTag = "Out of schedule";
-            //    FileLog("Utils.StopTimelapse#" + timelapse.ID + " - Stop Recording Expired");
-            //    return true; 
-            //}
+            if (timelapse.Status == (int)TimelapseStatus.Paused)
+            {
+                timelapse.StatusTag = "Timelapse Paused";
+                FileLog("Utils.StopTimelapse#" + timelapse.ID + " - Stop Recording Paused");
+                return true;
+            }
 
             // otherwise if new, processing or scheduled
             if (timelapse.DateAlways && !timelapse.TimeAlways)

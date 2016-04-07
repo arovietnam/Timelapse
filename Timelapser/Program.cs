@@ -105,9 +105,8 @@ namespace Timelapser
                 DownPath = Path.Combine(FilePath, cleanCameraId, timelapse.ID.ToString(), "images");
                 TsPath = Path.Combine(FilePath, cleanCameraId, timelapse.ID.ToString(), "ts");
                 TempPath = Path.Combine(FilePath, cleanCameraId, timelapse.ID.ToString(), "temp");
+                string hlsFileUrl = "http://timelapse.evercam.io/timelapses/" + cleanCameraId + "/" + timelapse.ID.ToString();
                 
-                //if (!Directory.Exists(FfmpegCopyPath))
-                //    Directory.CreateDirectory(FfmpegCopyPath);
                 if (!Directory.Exists(FilePath))
                     Directory.CreateDirectory(FilePath);
                 if (!Directory.Exists(UpPath))
@@ -118,8 +117,9 @@ namespace Timelapser
                     Directory.CreateDirectory(TsPath);
                 if (!Directory.Exists(TempPath))
                     Directory.CreateDirectory(TempPath);
-                if (!File.Exists(Path.Combine(UpPath, "timelapse.m3u8")))
-                    CreateManifestFile(UpPath);
+                //if (!File.Exists(Path.Combine(UpPath, "timelapse.m3u8")))
+                CreateManifestFile(UpPath);
+                CreateManifestFileForDownload(UpPath, hlsFileUrl);
                 CreateBashFile(timelapse.FPS, DownPath, TsPath, chunkSize, timelapse.SnapsInterval);
                 
                 Recorder recorder = new Recorder(timelapse);
@@ -193,7 +193,7 @@ namespace Timelapser
             bash.AppendLine("#!/bin/bash");
             var ffmpeg_command_480 = string.Format("ffmpeg -threads 1 -y -framerate {0} -i {1}/%d.jpg -c:v libx264 -pix_fmt yuv420p -profile:v baseline -level 2.1 -maxrate 500K -bufsize 2M -crf 18 -r {0} -g 30  -f hls -hls_time {3} -hls_list_size 0 -s 480x270 {2}/low.m3u8", frame_per_sec, imagesPath, tsPath, chunkFileSize);
             var ffmpeg_command_640 = string.Format("ffmpeg -threads 1 -y -framerate {0} -i {1}/%d.jpg -c:v libx264 -pix_fmt yuv420p -profile:v baseline -level 3.1 -maxrate 1M -bufsize 3M -crf 18 -r {0} -g 72 -f hls -hls_time {3} -hls_list_size 0 -s 640x360 {2}/medium.m3u8", frame_per_sec, imagesPath, tsPath, chunkFileSize);
-            var ffmpeg_command_1280 = string.Format("ffmpeg -threads 1 -y -framerate {0} -i {1}/%d.jpg -c:v libx264 -pix_fmt yuv420p -profile:v main -level 3.2 -maxrate 2M -bufsize 6M -crf 18 -r {0} -g 72 -f hls -hls_time {3} -hls_list_size 0 {2}/high.m3u8", frame_per_sec, imagesPath, tsPath, chunkFileSize);
+            var ffmpeg_command_1280 = string.Format("ffmpeg -threads 1 -y -framerate {0} -i {1}/%d.jpg -c:v libx264 -pix_fmt yuv420p -profile:v high -level 3.2 -maxrate 4M -crf 18 -r {0} -g 100 -f hls -hls_time {3} -hls_list_size 0 {2}/high.m3u8", frame_per_sec, imagesPath, tsPath, chunkFileSize);
             bash.AppendLine(ffmpeg_command_480);
             bash.AppendLine(ffmpeg_command_640);
             bash.AppendLine(ffmpeg_command_1280);
@@ -208,8 +208,21 @@ namespace Timelapser
             m3u8File.AppendLine("ts/low.m3u8");
             m3u8File.AppendLine("#EXT-X-STREAM-INF:BANDWIDTH=1000000");
             m3u8File.AppendLine("ts/medium.m3u8");
-            m3u8File.AppendLine("#EXT-X-STREAM-INF:BANDWIDTH=2000000");
+            m3u8File.AppendLine("#EXT-X-STREAM-INF:BANDWIDTH=4000000");
             m3u8File.AppendLine("ts/high.m3u8");
+            File.WriteAllText(Path.Combine(UpPath, "index.m3u8"), m3u8File.ToString());
+        }
+
+        protected static void CreateManifestFileForDownload(string timelapsePath, string tsPath)
+        {
+            var m3u8File = new StringBuilder();
+            m3u8File.AppendLine("#EXTM3U");
+            m3u8File.AppendLine("#EXT-X-STREAM-INF:BANDWIDTH=500000");
+            m3u8File.AppendLine(tsPath + "/ts/low.m3u8");
+            m3u8File.AppendLine("#EXT-X-STREAM-INF:BANDWIDTH=1000000");
+            m3u8File.AppendLine(tsPath + "/ts/medium.m3u8");
+            m3u8File.AppendLine("#EXT-X-STREAM-INF:BANDWIDTH=4000000");
+            m3u8File.AppendLine(tsPath + "/ts/high.m3u8");
             File.WriteAllText(Path.Combine(UpPath, "timelapse.m3u8"), m3u8File.ToString());
         }
 
