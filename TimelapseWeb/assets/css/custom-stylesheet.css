@@ -1,4 +1,79 @@
-﻿.thumb-shadow {
+﻿.red {
+    color: #ff0000;
+}
+
+.green {
+    color: green;
+}
+
+.octicon-clippy {
+    margin-top: 4px;
+}
+
+.hls-url-right {
+    margin-right: 0;
+    padding-right: 0 !important;
+}
+
+.hls-url-left {
+    margin-left: 0;
+    padding-left: 0 !important;
+}
+
+.camera-online {
+    background-color: green;
+    border-radius: 50%;
+    display: inline-block;
+    height: 10px;
+    margin-right: 5px;
+    width: 10px;
+}
+
+.camera-offline {
+    background-color: #ff0000;
+    border-radius: 50%;
+    display: inline-block;
+    height: 10px;
+    margin-right: 5px;
+    width: 10px;
+}
+
+.copy-to-clipboard {
+    background-color: #e5e5e5;
+	background-image: none;
+	filter: none;
+	border: 0;
+	padding: 4px 7px 5px;
+    margin-left: -3px;
+	border: solid 1px #dddddd;
+	font-family: "Segoe UI", Helvetica, Arial, sans-serif;
+    font-size: 14px;  	
+    color: #333333;
+	cursor: pointer;
+	outline: none;
+    -webkit-box-shadow: none !important;
+    -moz-box-shadow: none !important;
+        box-shadow: none !important;
+    -webkit-border-radius: 0 !important;
+     -moz-border-radius: 0 !important;
+          border-radius: 0 !important;
+
+    -webkit-text-shadow: none;
+     -moz-text-shadow: none;
+          text-shadow: none;
+}
+
+.copy-to-clipboard:hover, 
+.copy-to-clipboard:focus, 
+.copy-to-clipboard:active,
+.copy-to-clipboard.active,
+.copy-to-clipboard[disabled],
+.copy-to-clipboard.disabled {  
+  color: #333333;
+  background-color: #d8d8d8 !important;
+}
+
+.thumb-shadow {
     -moz-box-shadow: 0 0 6px #808080;
 	-webkit-box-shadow: 0 0 6px #808080;
 	-goog-ms-box-shadow: 0 0 6px #808080;

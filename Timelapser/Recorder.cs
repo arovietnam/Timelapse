@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Net;
+
 using System.Collections;
 using System.Drawing;
 using System.Configuration;
@@ -23,6 +24,8 @@ namespace Timelapser
         int timeOutCount = 0;
         int timeOutLimit = Settings.TimeoutLimit;
         int index = 0;
+        ArrayList intervals = new ArrayList { 5, 15, 30, 60 };
+        ArrayList intervals_max = new ArrayList { 360, 720, 1440 };
         Size dimension = new Size(int.Parse(Settings.VideoWidth), int.Parse(Settings.VideoHeight));
         string MAX_RES = ConfigurationSettings.AppSettings["MaxResCameras"];
 
@@ -44,14 +47,7 @@ namespace Timelapser
                 return;
             }
 
-            //if (string.IsNullOrEmpty((FfmpegExePath = CopyFfmpeg())))
-            //{
-            //    Console.WriteLine("Unable to create copy of FFMPEG.exe.");
-            //    Utils.TimelapseLog(timelapse, "Exiting... Unable to create copy of FFMPEG.exe.");
-            //    ExitProcess();
-            //    return;
-            //}
-            //// recording images sequential
+            // recording images sequential
             RecordTimelapse();
         }
 
@@ -112,9 +108,9 @@ namespace Timelapser
                         ExitProcess();
                     }
                     Utils.TimelapseLog(timelapse, "Timelapser Initialized @ " + Utils.ConvertFromUtc(DateTime.UtcNow, timelapse.TimeZone) + " (" + timelapse.FromDT + "-" + timelapse.ToDT + ")");
-                    string imageFile = DownloadSnapshot();
                     int imagesCount = imagesDirectory.GetFiles("*.jpg").Length;
                     index = imagesCount;
+                    string imageFile = DownloadSnapshot();
                     // timelapse recorder is just initializing
                     if (!Program.Initialized)
                     {
@@ -133,10 +129,22 @@ namespace Timelapser
                             {
                                 File.Copy(sourceFile, Path.Combine(Program.DownPath, i + ".jpg"), true);
                             }
-                            CreateVideoChunks(BashFile);
+                            if (imagesCount == 24)
+                            {
+                                CreateVideoChunks(BashFile);
+                                imagesCount = imagesDirectory.GetFiles("*.jpg").Length;
+                                index = imagesCount;
+                            }
+                            else
+                            {
+                                CreateVideoChunks(BashFile, false);
+                                for (int i = index; i < 24; i++)
+                                {
+                                    File.Delete(Path.Combine(Program.DownPath, i + ".jpg"));
+                                }
+                            }
                             Utils.TimelapseLog(timelapse, "Initial Stream one repeated image<<< CreateVideoChunks");
-                            imagesCount = imagesDirectory.GetFiles("*.jpg").Length;
-                            index = imagesCount;
+                            
                         }
                         else if (CalculateChunckCreateTime(imagesCount, timelapse.SnapsInterval, timelapse.SnapsCount))
                         {
@@ -154,7 +162,33 @@ namespace Timelapser
                     
                     if (!string.IsNullOrEmpty(imageFile))
                     {
-                        if (CalculateChunckCreateTime(imagesCount, timelapse.SnapsInterval, timelapse.SnapsCount))
+                        if (intervals_max.Contains(timelapse.SnapsInterval) && index > 0 && index < 25)
+                        {
+                            if (Directory.Exists(Program.TsPath))
+                                Directory.Delete(Program.TsPath, true);
+                            Directory.CreateDirectory(Program.TsPath);
+                            string sourceFile = Path.Combine(Program.DownPath, (index - 1) + ".jpg");
+                            for (int i = index; i < 24; i++)
+                            {
+                                File.Copy(sourceFile, Path.Combine(Program.DownPath, i + ".jpg"), true);
+                            }
+                            if (imagesCount == 24)
+                            {
+                                CreateVideoChunks(BashFile);
+                                imagesCount = imagesDirectory.GetFiles("*.jpg").Length;
+                                index = imagesCount;
+                            }
+                            else
+                            {
+                                CreateVideoChunks(BashFile, false);
+                                for (int i = index; i < 24; i++)
+                                {
+                                    File.Delete(Path.Combine(Program.DownPath, i + ".jpg"));
+                                }
+                            }
+                            Utils.TimelapseLog(timelapse, "Add new image<<< CreateVideoChunks");
+                        }
+                        else if (CalculateChunckCreateTime(imagesCount, timelapse.SnapsInterval, timelapse.SnapsCount))
                         {
                             CreateNewVideoChunk(BashFile, timelapse.SnapsCount);
                             Utils.TimelapseLog(timelapse, "<<< CreateNewVideoChunk");
@@ -203,8 +237,6 @@ namespace Timelapser
 
         protected bool CalculateChunckCreateTime(int fileCount, int interval, int snapshotCount)
         {
-            ArrayList intervals = new ArrayList { 5, 15, 30, 60 };
-            ArrayList intervals_max = new ArrayList { 360, 720, 1440 };
             if (fileCount > snapshotCount)
             {
                 if (interval == 1 && (fileCount - snapshotCount) >= ((24 * Program.chunkSize) - 1))
@@ -335,12 +367,15 @@ namespace Timelapser
             return tempfile;
         }
 
-        public void CreateVideoChunks(string bashFile)
+        public void CreateVideoChunks(string bashFile, bool update_info = true)
         {
             Utils.TimelapseLog(timelapse, ">>> CreateVideoChunks(" + bashFile + ")");
             string[] maxres = MAX_RES.Split(new char[] { ',' });
             RunBash(bashFile);
-            TimelapseVideoInfo info = UpdateVideoInfo("");
+            if (update_info)
+            {
+                TimelapseVideoInfo info = UpdateVideoInfo("");
+            }
         }
 
         protected void CreateNewVideoChunk(string bashFile, int start_number)
@@ -405,7 +440,7 @@ namespace Timelapser
             bash.AppendLine("#!/bin/bash");
             var ffmpeg_command_480 = string.Format("ffmpeg -threads 1 -y -framerate {0} -start_number {3} -i {1}/%d.jpg -c:v libx264 -pix_fmt yuv420p -profile:v baseline -level 2.1 -maxrate 500K -bufsize 2M -crf 18 -r {0} -g 30 -s 480x270 {2}/low{4}.ts", frame_per_sec, imagesPath, tsPath, start_number, chunkIndex[0]);
             var ffmpeg_command_640 = string.Format("ffmpeg -threads 1 -y -framerate {0} -start_number {3} -i {1}/%d.jpg -c:v libx264 -pix_fmt yuv420p -profile:v baseline -level 3.1 -maxrate 1M -bufsize 3M -crf 18 -r {0} -g 72 -s 640x360 {2}/medium{4}.ts", frame_per_sec, imagesPath, tsPath, start_number, chunkIndex[1]);
-            var ffmpeg_command_1280 = string.Format("ffmpeg -threads 1 -y -framerate {0} -start_number {3} -i {1}/%d.jpg -c:v libx264 -pix_fmt yuv420p -profile:v main -level 3.2 -maxrate 2M -bufsize 6M -crf 18 -r {0} -g 72 {2}/high{4}.ts", frame_per_sec, imagesPath, tsPath, start_number, chunkIndex[2]);
+            var ffmpeg_command_1280 = string.Format("ffmpeg -threads 1 -y -framerate {0} -start_number {3} -i {1}/%d.jpg -c:v libx264 -pix_fmt yuv420p -profile:v high -level 3.2 -maxrate 4M -crf 18 -r {0} -g 100 {2}/high{4}.ts", frame_per_sec, imagesPath, tsPath, start_number, chunkIndex[2]);
             bash.AppendLine(ffmpeg_command_480);
             bash.AppendLine(ffmpeg_command_640);
             bash.AppendLine(ffmpeg_command_1280);
@@ -600,59 +635,23 @@ namespace Timelapser
             string result = "";
             try
             {
-                //var p = new Process();
-                //string fileargs = " -threads 1 -i " + movieName + " -f null /dev/null ";
-
-                //p.StartInfo.UseShellExecute = false;
-                //p.StartInfo.RedirectStandardError = true;
-                //p.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
-
-                //p.StartInfo.FileName = FfmpegExePath;
-                //p.StartInfo.Arguments = fileargs;
-
-                //p.Start();
-                //result = p.StandardError.ReadToEnd();
-
-                //Utils.KillProcess(p.Id, 0);
-
                 TimelapseVideoInfo info = new TimelapseVideoInfo();
-
-                //int index1 = result.IndexOf("Duration: ", StringComparison.Ordinal);
-                //int index2 = index1 + 8;
-                //if (index1 >= 0 && index2 >= 0)
-                //    info.Duration = result.Substring(index1 + ("Duration: ").Length, index2 - index1);
-
-                //if (result.Contains("SAR"))
-                //{
-                //    index2 = result.IndexOf("SAR", StringComparison.Ordinal) - 1;
-                //    index1 = index2 - 10;
-                //    info.Resolution = result.Substring(index1, index2 - index1).Trim();
-                //}
-                //else if (result.Contains("yuv420p"))
-                //{
-                //    index1 = result.IndexOf("yuv420p, ", StringComparison.Ordinal) + ("yuv420p, ").Length;
-                //    index2 = result.IndexOf(", ", index1);
-                //    info.Resolution = result.Substring(index1, index2 - index1).Trim();
-                //}
-
-                //info.Resolution = info.Resolution.Replace(",", "");
-                //info.Resolution = info.Resolution.Replace(" ", "");
-
-                //index1 = result.LastIndexOf("frame=", StringComparison.Ordinal) + ("frame= ").Length;
-                //index2 = result.IndexOf("fps", index1, StringComparison.Ordinal) - 1;
-                //if (index1 >= 0 && index2 >= 0)
-                //    info.SnapsCount = int.Parse(result.Substring(index1, index2 - index1).Trim());
-
-                // directly setting frames count equals to images count in directory
                 DirectoryInfo d = new DirectoryInfo(Program.DownPath);
-                //info.SnapsCount = 
-                int snapsCount = d.GetFiles("*.jpg").Length;
+                FileInfo[] filelist = d.GetFiles("*.jpg");
+                int snapsCount = filelist.Length;
+                if (snapsCount > 0)
+                {
+                    FileInfo file = new FileInfo(Path.Combine(Program.DownPath, (snapsCount - 1) + ".jpg"));
+                    long fileSize = snapsCount * file.Length;
 
-                //FileInfo fi = new FileInfo(movieName);
-                //info.FileSize = fi.Length;
-
-                //TimelapseDao.UpdateFileInfo(timelapse.Code, info);
-                TimelapseDao.UpdateSnapsCount(timelapse.Code, snapsCount);
+                    Image image = Image.FromFile(file.FullName);
+                    string resolution = image.Width + "x" + image.Height;
+                    info.FileSize = fileSize;
+                    info.Resolution = resolution;
+                    info.SnapsCount = snapsCount;
+                    info.Duration = "00:00";
+                    TimelapseDao.UpdateFileInfo(timelapse.Code, info);
+                }
                 return info;
             }
             catch (Exception ex)

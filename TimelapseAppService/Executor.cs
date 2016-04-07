@@ -17,6 +17,7 @@ namespace TimelapseAppService
     public class Executor
     {
         private static Dictionary<int, TimelapseProcessInfo> _timelapseInfos;
+        private static string FilePath = Settings.BucketUrl + Settings.BucketName;
         bool isServiceRunning = true;
         public string TimelapserExePath;
 
@@ -76,12 +77,6 @@ namespace TimelapseAppService
                     //    continue;
                     try
                     {
-                        if (timelapse.Status == (int)TimelapseStatus.NotFound)
-                        {
-                            Utils.FileLog("Timelapse NotFount: " + timelapse.ID);
-                            continue;
-                        }
-
                         if (string.IsNullOrEmpty((TimelapserExePath = CopyTimelapser(timelapse.ID))))
                         {
                             Utils.FileLog("Skipping timelapse... unable to create copy of Timelapser.exe");
@@ -89,7 +84,13 @@ namespace TimelapseAppService
                         }
                         
                         int pid = Utils.TimelapseRunning(timelapse.ID);
-
+                        if (timelapse.Status == (int)TimelapseStatus.Paused)
+                        {
+                            if (pid > 0)
+                                Utils.KillProcess(pid, timelapse.ID);
+                            Utils.FileLog("Timelapse Paused: " + timelapse.ID);
+                            continue;
+                        }
                         if (pid == 0 && Utils.StartTimelapse(timelapse)) {
                             StartTimelapser(timelapse);
                             TimelapseDao.UpdateStatus(timelapse.Code, (TimelapseStatus)timelapse.Status, timelapse.StatusTag, timelapse.TimeZone);
@@ -134,7 +135,7 @@ namespace TimelapseAppService
                 Camera camera = evercam.GetCamera(timelapse.CameraId);
 
                 // if camera found then start its process
-                if (camera.IsOnline)
+                if (camera.IsOnline || !isCreatedHls(timelapse.ID, camera.ID))
                 {
                     ProcessStartInfo process = new ProcessStartInfo(TimelapserExePath, timelapse.ID.ToString());
                     process.UseShellExecute = true;
@@ -261,6 +262,34 @@ namespace TimelapseAppService
                 return "";
             }
             return PathDest;
+        }
+
+        protected bool isCreatedHls(int timelapse_id, string camera_exid)
+        {
+            string downPath = Path.Combine(FilePath, camera_exid, timelapse_id.ToString(), "images");
+            string tsPath = Path.Combine(FilePath, camera_exid, timelapse_id.ToString(), "ts");
+
+            if (Directory.Exists(downPath) && Directory.Exists(tsPath))
+            {
+                DirectoryInfo imagesDirectory = new DirectoryInfo(downPath);
+                int imagesCount = imagesDirectory.GetFiles("*.jpg").Length;
+                DirectoryInfo ts = new DirectoryInfo(tsPath);
+                int hasTsFiles = ts.GetFiles("*.*").Length;
+                if (hasTsFiles == 0 && imagesCount > 0)
+                {
+                    return false;
+                }
+            }
+            else if (Directory.Exists(downPath) && !Directory.Exists(tsPath)) {
+                DirectoryInfo imagesDirectory = new DirectoryInfo(downPath);
+                int imagesCount = imagesDirectory.GetFiles("*.jpg").Length;
+                if (imagesCount > 0)
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
 
         void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)

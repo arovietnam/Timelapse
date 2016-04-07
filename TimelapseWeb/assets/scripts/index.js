@@ -81,10 +81,10 @@ var Index = function () {
     var handleLoginSection = function () {
         /* ENABLE FOR TESTING ONLY */
         //localStorage.setItem("oAuthTokenType", "bearer");
-        //localStorage.setItem("oAuthToken", "144dcb4621ac4352a8f3ada2eb44ded8");
+        //localStorage.setItem("oAuthToken", "bb42eb183dd11df6e258ca669d7089a0");
         //localStorage.setItem("tokenExpiry", "315568999");
-        //localStorage.setItem("timelapseUserId", "vinniequinn")
-        //localStorage.setItem("timelapseUsername", "Vinnie Quinn");
+        //localStorage.setItem("timelapseUserId", "azharmalik3")
+        //localStorage.setItem("timelapseUsername", "Azhar Malik");
         /* --------- END --------- */
         if (localStorage.getItem("oAuthToken") != null && localStorage.getItem("oAuthToken") != undefined) {
             getMyTimelapse();
@@ -207,13 +207,13 @@ var Index = function () {
         });
     };
 
-    $(".newTimelapse").live("click", function() {
+    $(".newTimelapse").live("click", function () {
         showTimelapseForm();
         $("#divLoadingTimelapse").fadeOut();
     });
 
     var showTimelapseForm = function() {
-        $.get('NewTimelapse.html', function(data) {
+        $.get('NewTimelapse.html', function (data) {
             $("#newTimelapse").html(data);
             $("#lnNewTimelapse").hide();
             $("#lnNewTimelapseCol").show();
@@ -639,40 +639,48 @@ var Index = function () {
 
     var getTimeLapseStatus = function(status) {
         if (status == 0)
-            return "New";
+            return '<span class="green">Active</span>';
         else if (status == 1)
-            return "Recording";
+            return '<span class="green">Active</span>';
         else if (status == 2)
-            return "Failed";
+            return '<span class="red">Failed</span>';
         else if (status == 3)
-            return "Scheduled";
+            return '<span class="green">Active</span>';
         else if (status == 4)
-            return "Stopped";
+            return '<span class="red">Stopped</span>';
         else if (status == 5)
-            return "Camera Not Found";
+            return '<span class="red">Camera Not Found</span>';
         else if (status == 6)
-            return "Expired";
+            return '<span class="green">Completed</span>';
+        else if (status == 7)
+            return '<span class="green">Paused</span>';
     };
 
     var getVideoPlayer = function (cameraId, timelapseCode, mp4, jpg, timelapseId, logoFile) {
         var img = new Image();
         img.onerror = function (evt) {
             var html = "<video data-setup='{ \"playbackRates\": [0.06, 0.12, 0.25, 0.5, 1, 1.5, 2, 2.5, 3] }' poster=\"assets/img/timelapse.jpg\" preload=\"none\" controls class=\"video-js vjs-default-skin video-bg-width\" id=\"video-control-" + timelapseId + "\">";
-            html += '<source type="application/x-mpegURL" src="http://timelapse.evercam.io/timelapses/' + cameraId + '/' + timelapseId + '/timelapse.m3u8"></source>';
+            html += '<source type="application/x-mpegURL" src="http://timelapse.evercam.io/timelapses/' + cameraId + '/' + timelapseId + '/index.m3u8"></source>';
             html += '</video>';
             $("#divVideoContainer" + timelapseId).html(html);
-            videojs("video-control-" + timelapseId).ready(function () {
-                //this.playbackRate(0.25);
-            });
+            try {
+                videojs("video-control-" + timelapseId).ready(function () {
+                    //this.playbackRate(0.25);
+                });
+            }
+            catch (exception) { }
         };
         img.onload = function (evt) {
             var html = "<video data-setup='{ \"playbackRates\": [0.06, 0.12, 0.25, 0.5, 1, 1.5, 2, 2.5, 3] }' poster=\"" + jpg + "\" preload=\"none\" controls class=\"video-js vjs-default-skin video-bg-width\" id=\"video-control-" + timelapseId + "\">";
-            html += '<source type="application/x-mpegURL" src="http://timelapse.evercam.io/timelapses/' + cameraId + '/' + timelapseId + '/timelapse.m3u8"></source>';
+            html += '<source type="application/x-mpegURL" src="http://timelapse.evercam.io/timelapses/' + cameraId + '/' + timelapseId + '/index.m3u8"></source>';
             html += '</video>';
             $("#divVideoContainer" + timelapseId).html(html);
-            videojs("video-control-" + timelapseId).ready(function () {
-                //this.playbackRate(0.25);
-            });
+            try {
+                videojs("video-control-" + timelapseId).ready(function () {
+                    //this.playbackRate(0.25);
+                });
+            }
+            catch (exception) { }
         };
         img.src = jpg;
     };
@@ -685,7 +693,7 @@ var Index = function () {
     var getHtml = function(data) {
         var cameraOptions = '';
         var timezone = '';
-        var cameraOffline = false;
+        var cameraOnline = false;
         var cameraName = '';
         var cams = JSON.parse(localStorage.getItem("timelapseCameras"));
         if (cams != null) {
@@ -695,10 +703,8 @@ var Index = function () {
                     timezone = cams.cameras[i].timezone;
                     cameraName = cams.cameras[i].name;
                     selected = 'selected';
-                    if (cams.cameras[i].status == 'Offline')
-                        cameraOffline = true;
+                    cameraOnline = cams.cameras[i].is_online;
                 }
-                //if (cams.cameras[i].status == "Active")
                 cameraOptions += '<option value="' + cams.cameras[i].id + '" ' + selected + '>' + cams.cameras[i].name + '</option>';
             }
         }
@@ -709,18 +715,16 @@ var Index = function () {
                 if (cams.cameras[i].id == data.camera_id) {
                     timezone = cams.cameras[i].timezone;
                     selected = 'selected';
-                    if (cams.cameras[i].status == 'Offline')
-                        cameraOffline = true;
+                    cameraOnline = cams.cameras[i].is_online;
                 }
-                //if (cams.cameras[i].status == "Active")
                 cameraOptions += '<option value="' + cams.cameras[i].id + '" ' + selected + '>' + cams.cameras[i].name + '</option>';
             }
         }
-
+        
         var html = '    <div id="tab' + data.code + '">'; 
         html += '        <div class="header-bg">';
         html += '          <div class="row-fluid box-header-padding" data-val="' + data.id + '">';
-        html += '              <div id="timelapseTitle' + data.id + '" class="timelapse-labelhd timelapse-label">' + data.title + '&nbsp;<span class="timelapse-camera-name">' + cameraName + '</span></div>';
+        html += '              <div id="timelapseTitle' + data.id + '" class="timelapse-labelhd timelapse-label"><div class="' + (cameraOnline ? 'camera-online' : 'camera-offline') + '"></div>' + data.title + '&nbsp;<span class="timelapse-camera-name">' + cameraName + '</span></div>';
         html += '              <div id="timelapseStatus' + data.code + '" class="timelapse-recordhd timelapse-label-status text-right">';
         html += getTimeLapseStatus(data.status);
         html += '               </div>';
@@ -752,14 +756,14 @@ var Index = function () {
         html += '                                         <div class="timelapse-content-box">';
         html += '                                           <table class="table table-full-width" style="margin-bottom:0px;">';
         html += '                                           <tr><td class="span2">Total Snapshots: </td><td class="span2" id="tdSnapCount' + data.code + '">' + data.snaps_count + '</td><td style="width:25px;text-align:right;" align="right"><img id="imgRef' + data.id + '" style="cursor:pointer;height:27px;" data-val="' + data.code + '" class="refreshStats" src="assets/img/refres-tile.png" alt="Refresh Stats" title="Refresh Stats"></td></tr>';
-        //html += '                                           <tr><td class="span2">Timelapse Length: </td><td class="span3" colspan="2"  id="tdDuration' + data.code + '">' + data.duration + '</td></tr>';
         html += '                                           <tr><td class="span2">File Size: </td><td class="span3" colspan="2"  id="tdFileSize' + data.code + '">' + data.file_size + '</td></tr>';
-        //html += '                                           <tr><td class="span2">Playback Speed: </td><td class="span3" colspan="2">' + data.fps + ' fps</td></tr>';
         html += '                                           <tr><td class="span2">Resolution: </td><td class="span3" colspan="2"  id="tdResolution' + data.code + '">' + (data.snaps_count == 0 ? '640x480' : data.resolution) + 'px</td></tr>';
         html += '                                           <tr><td class="span2">Created At: </td><td class="span3" colspan="2"  id="tdCreated' + data.code + '">' + (data.created_date) + '</td></tr>'; //data.snaps_count == 0 ? getDate() : 
         html += '                                           <tr><td class="span2">Last Snapshot At: </td><td class="span3" colspan="2"  id="tdLastSnapDate' + data.code + '">' + (data.snaps_count == 0 ? '---' : data.last_snap_date) + '</td></tr>';
         html += '                                           <tr><td class="span2">Camera Timezone: </td><td class="span3" colspan="2"  id="tdTimezone' + data.code + '">' + timezone + '</td></tr>';
-        html += '                                           <tr><td class="span2">Timelapse Status: </td><td class="span3" colspan="2"  id="tdStatus' + data.code + '">' + (data.status_tag == null ? (data.status == 1 ? 'Now recording...' : '') : data.status_tag) + '</td></tr></table>';
+        html += '                                           <tr><td class="span2">HLS URL: </td><td class="span3 hls-url-right" id="tdHlsUrl' + data.code + '"><input id="txtHlsUrl' + data.code + '" type="text" class="span12" value="http://timelapse.evercam.io/timelapses/' + data.camera_id + '/' + data.id + '/timelapse.m3u8"/></td>';
+        html += '                                           <td class="hls-url-left"><span class="copy-to-clipboard" data-val="' + data.code + '" alt="Copy to clipboard" title="Copy to clipboard"><svg aria-hidden="true" class="octicon octicon-clippy" height="16" role="img" version="1.1" viewBox="0 0 14 16" width="14"><path d="M2 12h4v1H2v-1z m5-6H2v1h5v-1z m2 3V7L6 10l3 3V11h5V9H9z m-4.5-1H2v1h2.5v-1zM2 11h2.5v-1H2v1z m9 1h1v2c-0.02 0.28-0.11 0.52-0.3 0.7s-0.42 0.28-0.7 0.3H1c-0.55 0-1-0.45-1-1V3c0-0.55 0.45-1 1-1h3C4 0.89 4.89 0 6 0s2 0.89 2 2h3c0.55 0 1 0.45 1 1v5h-1V5H1v9h10V12zM2 4h8c0-0.55-0.45-1-1-1h-1c-0.55 0-1-0.45-1-1s-0.45-1-1-1-1 0.45-1 1-0.45 1-1 1h-1c-0.55 0-1 0.45-1 1z"></path></svg></span></td></tr>';
+        html += '                                           <tr><td class="span2">Timelapse Status: </td><td class="span3" colspan="2"  id="tdStatus' + data.code + '"><span style="margin-right:10px;" id="spnStatus' + data.code + '">' + (data.status_tag == null ? (data.status == 1 ? 'Now recording...' : '') : (data.status == 7 ? 'Timelapse Stopped' : data.status_tag)) + '</span><button type="button" camera-code="' + data.code + '" class="btn toggle-status" data-val="' + (data.status == 7 ? 'start' : 'stop') + '">' + (data.status == 7 ? '<i class="icon-play"></i> Start' : '<i class="icon-stop"></i> Stop') + '</button></td></tr></table>';
         html += '                                       </div></div>';
 
         html += '                                       <div id="embedcode' + data.id + '" class="row-fluid hide">';
@@ -767,147 +771,11 @@ var Index = function () {
         html += '&lt;script src="http://timelapse.evercam.io/timelapse_widget.js" class="' + data.camera_id + ' ' + data.id + ' ' + data.code + '"&gt;&lt;/script&gt;</pre><br/>';
         html += '                                       </div>';
 
-        html += '                                       <div id="setting' + data.id + '" class="row-fluid hide">';
-        html += '                                         <div class="timelapse-content-box padding14">';
-        html += '                                           <form class="form-horizontal" style="margin-bottom:0px;">';
-        html += '                                               <div class="control-group">';
-        html += '                                                   <label class="controlLabel">Title</label>';
-        html += '                                                   <div class="Controls">';
-        html += '                                                       <input type="text" id="txtTitle' + data.id + '" value="' + data.title + '" class="span7 m-wrap white" placeholder="Timelapse Title">';
-        html += '                                                   </div>';
-        html += '                                               </div>';
-        html += '                                               <div class="control-group">';
-        html += '                                                   <label class="controlLabel">Interval</label>';
-        html += '                                                   <div class="Controls">';
-        html += '                                                       <select disabled id="ddlCameras' + data.id + '" class="span7 m-wrap hide"><option value="0">Select Camera</option>';
-        html += cameraOptions;
-        html += '                                                       </select>';
-        html += '                                                       <select id="ddlIntervals' + data.id + '" class="span7 m-wrap">';
-        html += '                                                           <option value="0" ' + (data.interval == "0" ? "selected" : "") + '>Select Interval</option>';
-        html += '                                                           <option value="1" ' + (data.interval == "1" ? "selected" : "") + '>1 Frame Every 1 min</option>';
-        html += '                                                           <option value="5" ' + (data.interval == "5" ? "selected" : "") + '>1 Frame Every 5 min</option>';
-        html += '                                                           <option value="15" ' + (data.interval == "15" ? "selected" : "") + '>1 Frame Every 15 min</option>';
-        html += '                                                           <option value="30" ' + (data.interval == "30" ? "selected" : "") + '>1 Frame Every 30 min</option>';
-        html += '                                                           <option value="60" ' + (data.interval == "60" ? "selected" : "") + '>1 Frame Every 1 hour</option>';
-        html += '                                                           <option value="360" ' + (data.interval == "360" ? "selected" : "") + '>1 Frame Every 6 hours</option>';
-        html += '                                                           <option value="720" ' + (data.interval == "720" ? "selected" : "") + '>1 Frame Every 12 hours</option>';
-        html += '                                                           <option value="1440" ' + (data.interval == "1440" ? "selected" : "") + '>1 Frame Every 24 hours</option>';
-        html += '                                                       </select>';
-        html += '                                                   </div>';
-        html += '                                               </div>';
-
-        html += '                                               <div class="control-group">';
-        html += '                                                   <label class="controlLabel">Watermark Pos.</label>';
-        html += '                                                   <div class="Controls">';
-        html += '                                                       <select id="ddlLogoPositions' + data.id + '" class="span7 m-wrap">';
-        html += '                                                           <option value="-1" ' + (data.watermark_position == "0" ? "selected" : "") + '>Select Logo Position</option>';
-        html += '                                                           <option value="0" ' + (data.watermark_position == "1" ? "selected" : "") + '>Top Left</option>';
-        html += '                                                           <option value="1" ' + (data.watermark_position == "5" ? "selected" : "") + '>Top Right</option>';
-        html += '                                                           <option value="2" ' + (data.watermark_position == "15" ? "selected" : "") + '>Bottom Left</option>';
-        html += '                                                           <option value="3" ' + (data.watermark_position == "30" ? "selected" : "") + '>Bottom Right</option>';
-        html += '                                                       </select>';
-        html += '                                                       <input type="hidden" id="txtLogoFile' + data.id + '" value="' + data.watermark_file + '"/>';
-        html += '                                                   </div>';
-        html += '                                               </div>';
-
-        html += '                                               <div class="control-group">';
-        html += '                                                   <label class="controlLabel">Watermark</label>';
-        html += '                                                   <div class="Controls">';
-        html += '                                                       ';
-        html += '                                                       <select disabled id="ddlFrameRate' + data.id + '" class="span7 m-wrap hide">';
-        html += '                                                           <option value="1" ' + (data.fps == "1" ? "selected" : "") + '>1 fps</option>';
-        html += '                                                           <option value="2" ' + (data.fps == "2" ? "selected" : "") + '>2 fps</option>';
-        html += '                                                           <option value="3" ' + (data.fps == "3" ? "selected" : "") + '>3 fps</option>';
-        html += '                                                           <option value="4" ' + (data.fps == "4" ? "selected" : "") + '>4 fps</option>';
-        html += '                                                           <option value="5" ' + (data.fps == "5" ? "selected" : "") + '>5 fps</option>';
-        html += '                                                           <option value="6" ' + (data.fps == "6" ? "selected" : "") + '>6 fps</option>';
-        html += '                                                           <option value="7" ' + (data.fps == "7" ? "selected" : "") + '>7 fps</option>';
-        html += '                                                           <option value="8" ' + (data.fps == "8" ? "selected" : "") + '>8 fps</option>';
-        html += '                                                           <option value="9" ' + (data.fps == "9" ? "selected" : "") + '>9 fps</option>';
-        html += '                                                           <option value="10" ' + (data.fps == "10" ? "selected" : "") + '>10 fps</option>';
-        html += '                                                           <option value="11" ' + (data.fps == "11" ? "selected" : "") + '>11 fps</option>';
-        html += '                                                           <option value="12" ' + (data.fps == "12" ? "selected" : "") + '>12 fps</option>';
-        html += '                                                           <option value="13" ' + (data.fps == "13" ? "selected" : "") + '>13 fps</option>';
-        html += '                                                           <option value="14" ' + (data.fps == "14" ? "selected" : "") + '>14 fps</option>';
-        html += '                                                           <option value="15" ' + (data.fps == "15" ? "selected" : "") + '>15 fps</option>';
-        html += '                                                       </select>';
-        html += '                                                   </div>';
-        html += '                                               </div>';
-        html += '                                               <div id="divRecording' + data.id + '" class="control-group1">';
-        html += '                                                   <label class="controlLabel">Recording</label>';
-        html += '                                                   <div class="Controls">';
-        html += '                                                       <div class="row-fluid padding-top3">';
-        html += '                                                           <label class="radio span2">';
-        html += '                                                               <input id="chkRecordingTimelapse' + data.id + '" name="recording" type="radio" value="a" ' + (data.is_recording ? "checked" : "") + ' />&nbsp;Active';
-        html += '                                                           </label>';
-        html += '                                                           <label class="radio span2">';
-        html += '                                                               <input id="chkPausedTimelapse' + data.id + '" name="recording" type="radio" value="p" ' + (!data.is_recording ? "checked" : "") + ' />&nbsp;Paused';
-        html += '                                                           </label>';
-        html += '                                                       </div>';
-        html += '                                                   </div>';
-        html += '                                               </div>';
-
-        html += '                                               <div class="control-group1">';
-        html += '                                                   <label class="controlLabel">Date Range</label>';
-        html += '                                                   <div class="Controls">';
-        html += '                                                       <div class="row-fluid padding-top3">';
-        html += '                                                           <label class="radio span2">';
-        html += '                                                               <input id="chkDateRangeAlways' + data.id + '" name="DateRange" type="radio" value="a" ' + (data.is_date_always ? 'checked' : "") + ' data-val="' + data.id + '"/>&nbsp;Always';
-        html += '                                                           </label>';
-        html += '                                                           <label class="radio span2">';
-        html += '                                                               <input id="chkDateRange' + data.id + '" name="DateRange" type="radio" value="p" ' + (!data.is_date_always ? 'checked' : "") + ' data-val="' + data.id + '"/>&nbsp;Range';
-        html += '                                                           </label>';
-        html += '                                                       </div>';
-        html += '                                                       <div id="divDateRange' + data.id + '" class="row-fluid- ' + (data.is_date_always ? "hide" : "") + '">';
-        html += '                                                           <label class="controlLabel"></label>';
-        html += '                                                           <input type="text" id="txtFromDateRange' + data.id + '" class="span1 small m-wrap white daterange" placeholder="From Date" readonly value="' + (!data.is_date_always ? data.from_date.substring(0, 10) : "") + '">&nbsp;';
-        html += '                                                           <input type="text" id="txtToDateRange' + data.id + '" class="span1 small m-wrap white daterange" placeholder="To Date" readonly value="' + (!data.is_date_always ? data.to_date.substring(0, 10) : "") + '">';
-        html += '                                                       </div>';
-        html += '                                                   </div>';
-        html += '                                               </div>';
-
-        html += '                                               <div class="control-group">';
-        html += '                                                   <label class="controlLabel">Time Range</label>';
-        html += '                                                   <div class="Controls">';
-        html += '                                                       <div class="row-fluid padding-top3">';
-        html += '                                                           <label class="radio span2">';
-        html += '                                                               <input id="chkTimeRangeAlways' + data.id + '" name="TimeRange" type="radio" value="a" ' + (data.is_time_always ? 'checked' : "") + ' data-val="' + data.id + '"/>&nbsp;Always';
-        html += '                                                           </label>';
-        html += '                                                           <label class="radio span2">';
-        html += '                                                               <input id="chkTimeRange' + data.id + '" name="TimeRange" type="radio" value="p" ' + (!data.is_time_always ? 'checked' : "") + ' data-val="' + data.id + '"/>&nbsp;Range';
-        html += '                                                           </label>';
-        html += '                                                       </div>';
-        html += '                                                       <div id="divTimeRange' + data.id + '" class="row-fluid- ' + (data.is_time_always ? "hide" : "") + '">';
-        html += '                                                           <label class="controlLabel"></label>';
-        html += '                                                           <input type="text" id="txtFromTimeRange' + data.id + '" class="span1 small m-wrap white timerange" placeholder="From Time" readonly value="' + (!data.is_time_always ? data.from_date.substring(11, 16) : "") + '">&nbsp;';
-        html += '                                                           <input type="text" id="txtToTimeRange' + data.id + '" class="span1 small m-wrap white timerange" placeholder="To Time" readonly value="' + (!data.is_time_always ? data.to_date.substring(11, 16) : "") + '">';
-        html += '                                                       </div>';
-        html += '                                                   </div>';
-        html += '                                               </div>';
-
-        html += '                                               <div class="control-group" style="margin-bottom:5px;">';
-        html += '                                                   <label class="controlLabel"></label>';
-        html += '                                                   <div class="Controls">';
-        html += '                                                       <button type="button" class="btn formButtonOk" data-val="' + data.id + '"><i class="icon-ok"></i> Save</button>';
-        html += '                                                       <button data-val="' + data.id + '" type="button" class="btn formButtonCancel">Cancel</button>';
-        html += '                                                       <input type="hidden" id="txtCameraCode' + data.id + '" value="' + data.code + '"/>';
-        html += '                                                   </div>';
-        html += '                                               </div>';
-        html += '                                               <div class="control-group1">';
-        html += '                                               <div class="Controls">';
-        html += '                                                   <div id="divAlert' + data.id + '" class="alert alert-error hide" style="margin-bottom:2px;">';
-        html += '                                                       <button class="close" data-dismiss="alert"></button>';
-        html += '                                                       <span>Enter any email and password.</span>';
-        html += '                                                   </div>';
-        html += '                                               </div>';
-        html += '                                           </div>';
-        html += '                                       </form>';
-        html += '                                   </div></div>';
-
         html += '                                       <div id="option' + data.id + '" class="row-fluid hide">';
         html += '                                         <div class="timelapse-content-box padding14">';
-        html += '                                           <div style="padding-bottom:7px;"><ul class="list-style-none"><li style="width:5%;float:left;"><a target="_blank" rel="nofollow" title="' + data.title + '" href="' + data.mp4_url + '" download="' + data.title + '" class="commonLinks-icon" data-action="d" data-url="' + data.mp4_url + '" data-val="' + data.code + '"><img src="assets/img/download.png" /></a></li><li style="width: 95%; float: left; padding: 1px 0px 0px 4px;">&nbsp;<a target="_blank" rel="nofollow" title="' + data.title + '" href="' + data.mp4_url + '" download="' + data.title + '" class="commonLinks-icon" data-action="d" data-url="' + data.mp4_url + '" data-val="' + data.code + '">Download Video as MP4</a></li></ul><div class="clearfix"></div></div>';
+        //html += '                                           <div style="padding-bottom:7px;"><ul class="list-style-none"><li style="width:5%;float:left;"><a target="_blank" rel="nofollow" title="' + data.title + '" href="' + data.mp4_url + '" download="' + data.title + '" class="commonLinks-icon" data-action="d" data-url="' + data.mp4_url + '" data-val="' + data.code + '"><img src="assets/img/download.png" /></a></li><li style="width: 95%; float: left; padding: 1px 0px 0px 4px;">&nbsp;<a target="_blank" rel="nofollow" title="' + data.title + '" href="' + data.mp4_url + '" download="' + data.title + '" class="commonLinks-icon" data-action="d" data-url="' + data.mp4_url + '" data-val="' + data.code + '">Download Video as MP4</a></li></ul><div class="clearfix"></div></div>';
         html += '                                           <div><ul class="list-style-none"><li style="width: 5%; float: left; padding-left: 3px;"><a href="javascript:;" class="commonLinks-icon" data-action="r" data-val="' + data.code + '"><img src="assets/img/delete.png" /></a></li><li style="width: 95%; float: left; padding: 2px 0px 0px 2px;">&nbsp;&nbsp;<a href="javascript:;" class="commonLinks-icon" data-action="r" data-val="' + data.code + '">Delete Timelapse</a></li></ul><div class="clearfix"></div></div>';
+	    html += '                                           <div style="padding-top:15px;padding-left: 3px;">If you require a downloadable mp4 file, please email <a href="mailto:vinnie@evercam.io;">vinnie@evercam.io</a></div>';
         html += '                                       </div></div>';
 
         html += '                                   </td>';
@@ -924,6 +792,90 @@ var Index = function () {
             }, 1000 * 60);
         return html;
     };
+
+    $(".copy-to-clipboard").live("click", function () {
+        var timelapse_code = $(this).attr("data-val");
+        copyToClipboard(document.getElementById("txtHlsUrl" + timelapse_code));
+    });
+
+    var copyToClipboard = function (elem) {
+        // create hidden text element, if it doesn't already exist
+        var targetId = "_hiddenCopyText_";
+        var isInput = elem.tagName === "INPUT" || elem.tagName === "TEXTAREA";
+        var origSelectionStart, origSelectionEnd;
+        if (isInput) {
+            // can just use the original source element for the selection and copy
+            target = elem;
+            origSelectionStart = elem.selectionStart;
+            origSelectionEnd = elem.selectionEnd;
+        } else {
+            // must use a temporary form element for the selection and copy
+            target = document.getElementById(targetId);
+            if (!target) {
+                var target = document.createElement("textarea");
+                target.style.position = "absolute";
+                target.style.left = "-9999px";
+                target.style.top = "0";
+                target.id = targetId;
+                document.body.appendChild(target);
+            }
+            target.textContent = elem.textContent;
+        }
+        // select the content
+        var currentFocus = document.activeElement;
+        target.focus();
+        target.setSelectionRange(0, target.value.length);
+
+        // copy the selection
+        var succeed;
+        try {
+            succeed = document.execCommand("copy");
+        } catch (e) {
+            succeed = false;
+        }
+        // restore original focus
+        if (currentFocus && typeof currentFocus.focus === "function") {
+            currentFocus.focus();
+        }
+
+        if (isInput) {
+            // restore prior selection
+            elem.setSelectionRange(origSelectionStart, origSelectionEnd);
+        } else {
+            // clear temporary content
+            target.textContent = "";
+        }
+        return succeed;
+    }
+
+    $(".toggle-status").live("click", function () {
+        var control = $(this);
+        var camera_code = control.attr("camera-code");
+        var status = control.attr('data-val') == 'stop' ? 7 : 1;
+        $.ajax({
+            type: 'POST',
+            url: timelapseApiUrl + "/" + camera_code + "/status/" + status + "/users/" + localStorage.getItem("timelapseUserId"),
+            dataType: 'json',
+            contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
+            success: function (response) {
+                if (response.status == 7) {
+                    $("#timelapseStatus" + response.code).html('<span class="green">Paused</span>');
+                    $("#spnStatus" + response.code).text("Timelapse Stopped");
+                    control.attr('data-val', 'start');
+                    control.find("i").removeClass("icon-stop").addClass("icon-play");
+                }
+                else {
+                    $("#timelapseStatus" + response.code).html('<span class="green">Active</span>');
+                    $("#spnStatus" + response.code).html("Recording now...");
+                    control.attr('data-val', 'stop');
+                    control.find("i").removeClass("icon-play").addClass("icon-stop");
+                }
+            },
+            error: function (xhr, textStatus) {
+                    
+            }
+        });
+    });
 
     $(".tab-a2").live("click", function () {
         var clickedTab = $(this);
@@ -1371,7 +1323,6 @@ var Index = function () {
             handleLogout();
             handleMyTimelapse();
             handleFancyBox();
-            //getUserLocalIp();
         }
 
     };
