@@ -43,7 +43,7 @@ namespace Timelapser
             //Utils.CopyTimelapsesToAzure();
 
             AppDomain.CurrentDomain.UnhandledException += CurrentDomainUnhandledException;
-            int tId = Convert.ToInt32(args[0]); //609; 634 // Convert.ToInt32(args[0]);
+            int tId = Convert.ToInt32(args[0]);
             
             Evercam.SANDBOX = Settings.EvercamSandboxMode;
             Evercam = new Evercam(Settings.EvercamClientID, Settings.EvercamClientSecret, Settings.EvercamClientUri);

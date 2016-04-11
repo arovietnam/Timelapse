@@ -39,11 +39,6 @@ namespace TimelapseAppService
                 try
                 {
                     timelapses = TimelapseDao.GetList(null, null);
-
-                    //// for testing purpose only
-                    //timelapses = new List<Timelapse>();
-                    //timelapses.Add(TimelapseDao.Get(220));
-                    //Utils.FileLog("TESTING Timelapse Service..." + Environment.NewLine);
                 }
                 catch(Exception x)
                 {
@@ -72,9 +67,6 @@ namespace TimelapseAppService
 
                 foreach (Timelapse timelapse in timelapses)
                 {
-                    //// skipping other timelapses for testing this one
-                    //if (timelapse.ID != 430)
-                    //    continue;
                     try
                     {
                         if (string.IsNullOrEmpty((TimelapserExePath = CopyTimelapser(timelapse.ID))))
@@ -118,7 +110,7 @@ namespace TimelapseAppService
 
                 Thread.Sleep(1000 * 60 * Settings.RecheckInterval);     // RecheckInterval in minutes
                 
-                CheckStartDeletion();
+                //CheckStartDeletion();
             }
         }
 

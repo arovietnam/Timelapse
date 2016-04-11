@@ -278,23 +278,24 @@ namespace Timelapser
             {
                 // instead of trying for X times, just try once other wise fetch from recording
                 // store and returns live snapshot on evercam
-                data = Program.Evercam.CreateSnapshot(timelapse.CameraId, Settings.EvercamClientName, true).ToBytes();
+                var snap1 = Program.Evercam.CreateSnapshot(timelapse.CameraId, Settings.EvercamClientName, true);
+                data = EvercamV2.Utility.ToBytes(snap1.Data);
                 Utils.TimelapseLog(timelapse, "Image data retrieved from Camera");
             }
             catch (Exception x)
             {
                 Utils.TimelapseLog(timelapse, "Exception: Image data retrieved from Camera. " + x.Message);
                 EvercamV2.Snapshot snap = Program.Evercam.GetLatestSnapshot(timelapse.CameraId, true);
-                Utils.TimelapseLog(timelapse, "Latest Image data retrieved from Camera");
                 data = snap.ToBytes();
-                if (data != null && data.Length > 0)
-                { }
-                else
-                {
-                    timeOutCount++;
-                    data = null;
-                    Utils.TimelapseLog(timelapse, "Image count not be retrieved from Camera");
-                }
+                Utils.TimelapseLog(timelapse, "Latest Image data retrieved from Camera");
+            }
+            if (data != null && data.Length > 0)
+            { }
+            else
+            {
+                timeOutCount++;
+                data = null;
+                Utils.TimelapseLog(timelapse, "Image count not be retrieved from Camera");
             }
 
             if (data != null)
@@ -556,80 +557,6 @@ namespace Timelapser
             }
         }
 
-        //public TimelapseVideoInfo UpdateVideoInfo(string movieName)
-        //{
-        //    string result = "";
-        //    try
-        //    {
-        //        var p = new Process();
-        //        string fileargs = " -threads 1 -i " + movieName + " -f null /dev/null ";
-
-        //        p.StartInfo.UseShellExecute = false;
-        //        p.StartInfo.RedirectStandardError = true;
-        //        p.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
-
-        //        p.StartInfo.FileName = FfmpegExePath;
-        //        p.StartInfo.Arguments = fileargs;
-
-        //        p.Start();
-        //        result = p.StandardError.ReadToEnd();
-
-        //        Utils.KillProcess(p.Id, 0);
-                
-        //        TimelapseVideoInfo info = new TimelapseVideoInfo();
-
-        //        int index1 = result.IndexOf("Duration: ", StringComparison.Ordinal);
-        //        int index2 = index1 + 8;
-        //        if (index1 >= 0 && index2 >= 0)
-        //            info.Duration = result.Substring(index1 + ("Duration: ").Length, index2 - index1);
-
-        //        if (result.Contains("SAR"))
-        //        {
-        //            index2 = result.IndexOf("SAR", StringComparison.Ordinal) - 1;
-        //            index1 = index2 - 10;
-        //            info.Resolution = result.Substring(index1, index2 - index1).Trim();
-        //        }
-        //        else if (result.Contains("yuv420p"))
-        //        {
-        //            index1 = result.IndexOf("yuv420p, ", StringComparison.Ordinal) + ("yuv420p, ").Length;
-        //            index2 = result.IndexOf(", ", index1);
-        //            info.Resolution = result.Substring(index1, index2 - index1).Trim();
-        //        }
-
-        //        info.Resolution = info.Resolution.Replace(",", "");
-        //        info.Resolution = info.Resolution.Replace(" ", "");
-
-        //        //index1 = result.LastIndexOf("frame=", StringComparison.Ordinal) + ("frame= ").Length;
-        //        //index2 = result.IndexOf("fps", index1, StringComparison.Ordinal) - 1;
-        //        //if (index1 >= 0 && index2 >= 0)
-        //        //    info.SnapsCount = int.Parse(result.Substring(index1, index2 - index1).Trim());
-
-        //        // directly setting frames count equals to images count in directory
-        //        DirectoryInfo d = new DirectoryInfo(Program.DownPath);
-        //        info.SnapsCount = d.GetFiles("*.jpg").Length;
-
-        //        FileInfo fi = new FileInfo(movieName);
-        //        info.FileSize = fi.Length;
-
-        //        //TimelapseDao.UpdateFileInfo(timelapse.Code, info);
-
-        //        return info;
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        Utils.TimelapseLog(timelapse, "ERR: UpdateVideoInfo(" + movieName + "): " + ex.ToString());
-        //        // file is un-readable may be causing error like 'Invalid data found when processing input'
-        //        // so move this bad copy of to /temp/ folder for backup and clean the space for new file
-        //        string errVideoFileName = Path.Combine(Program.TempPath, "err" + timelapse.Code + ".mp4");
-        //        if (File.Exists(errVideoFileName))
-        //            File.Delete(errVideoFileName);
-
-        //        Utils.TimelapseLog(timelapse, "ERR: UpdateVideoInfo(" + movieName + "): " + Environment.NewLine + "Output: " + result);
-
-        //        return new TimelapseVideoInfo();
-        //    }
-        //}
-
         public TimelapseVideoInfo UpdateVideoInfo(string movieName)
         {
             string result = "";
@@ -686,15 +613,7 @@ namespace Timelapser
             process.Refresh();
 
             string output = process.StandardError.ReadToEnd();
-            //process.WaitForExit();
-            //if (process.ExitCode != 0)
-            //{
-            //    //string error = p.StandardError.ReadToEnd();
-            //    process.Dispose();
-            //    throw new ApplicationException();
-            //}
-            //process.Dispose();
-
+            
             try
             {
                 if (!process.HasExited && process.Responding)
@@ -767,10 +686,6 @@ namespace Timelapser
             {
                 string poster = Path.Combine(Program.UpPath, timelapse.Code + ".jpg");
                 File.Copy(filename, poster, true);
-                //if (File.Exists(Path.Combine(Program.UpPath, Program.WatermarkFileName)))
-                //    Utils.WatermarkImage(filename, poster, Path.Combine(Program.UpPath, Program.WatermarkFileName), timelapse.WatermarkPosition);
-                //else
-                //    Utils.TimelapseLog(timelapse, "Watermark not found at " + Path.Combine(Program.UpPath, Program.WatermarkFile));
             }
             catch (Exception x)
             {
@@ -798,24 +713,8 @@ namespace Timelapser
         {
             try
             {
-                string PathDest = Path.Combine(Program.FfmpegCopyPath, "ffmpeg_" + timelapse.ID + ".exe");
-                try
-                {
-                    //// Deletes timelapser copy of ffmpeg_id.exe
-                    if (File.Exists(PathDest)) File.Delete(PathDest);
-
-                    Utils.TimelapseLog(timelapse, "STOPPED @ (" + Utils.ConvertFromUtc(DateTime.UtcNow, timelapse.TimeZone) + ")");
-                    Console.WriteLine("STOPPED @ (" + Utils.ConvertFromUtc(DateTime.UtcNow, timelapse.TimeZone) + ")");
-                }
-                catch (Exception x)
-                {
-                    Utils.TimelapseLog(timelapse, "Recorder.ExitProcess() Error", x);
-                }
-                // try killing if still exists
-                Utils.TimelapseLog(timelapse, "KillProcess on Exit: ffmpeg_" + timelapse.ID);
-                Utils.KillProcess("ffmpeg_" + timelapse.ID);
-
                 Environment.Exit(0);
+                Utils.TimelapseLog(timelapse, "KillProcess on Exit: Timelapse ID: " + timelapse.ID);
             }
             catch (Exception x)
             {

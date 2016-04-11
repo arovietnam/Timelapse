@@ -245,18 +245,18 @@ namespace BLL.Common
                     DateTime nextDay = DateTime.UtcNow.AddDays(1);
                     if (DateTime.UtcNow >= new DateTime(DateTime.UtcNow.Year, DateTime.UtcNow.Month, DateTime.UtcNow.Day, timelapse.ToDT.Hour, timelapse.ToDT.Minute, 59) &&
                         DateTime.UtcNow < new DateTime(DateTime.UtcNow.Year, DateTime.UtcNow.Month, DateTime.UtcNow.Day, timelapse.FromDT.Hour, timelapse.FromDT.Minute, 00))
-                    { 
+                    {
                         timelapse.Status = (int)TimelapseStatus.Scheduled; timelapse.StatusTag = "Recording on schedule";
                         FileLog("Utils.StopTimelapse#" + timelapse.ID + " - NoStop Recording Everyday Next");
-                        return false; 
+                        return false;
                     }
                 }
                 else if (DateTime.UtcNow < new DateTime(DateTime.UtcNow.Year, DateTime.UtcNow.Month, DateTime.UtcNow.Day, timelapse.FromDT.Hour, timelapse.FromDT.Minute, 0) ||
                     DateTime.UtcNow > new DateTime(DateTime.UtcNow.Year, DateTime.UtcNow.Month, DateTime.UtcNow.Day, timelapse.ToDT.Hour, timelapse.ToDT.Minute, 59))
-                { 
+                {
                     timelapse.Status = (int)TimelapseStatus.Scheduled; timelapse.StatusTag = "Recording on schedule";
                     FileLog("Utils.StopTimelapse#" + timelapse.ID + " - NoStop Recording Everyday");
-                    return false; 
+                    return true;
                 }
             }
             else if (!timelapse.DateAlways && timelapse.TimeAlways)
