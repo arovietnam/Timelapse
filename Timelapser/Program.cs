@@ -44,7 +44,6 @@ namespace Timelapser
 
             AppDomain.CurrentDomain.UnhandledException += CurrentDomainUnhandledException;
             int tId = Convert.ToInt32(args[0]);
-            Console.Title = "RecoderCamId:" + tId;
             
             Evercam.SANDBOX = Settings.EvercamSandboxMode;
             Evercam = new Evercam(Settings.EvercamClientID, Settings.EvercamClientSecret, Settings.EvercamClientUri);
