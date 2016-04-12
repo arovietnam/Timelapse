@@ -5,6 +5,7 @@ var Index = function () {
     var ApiAction = 'POST';
     var apiContentType = 'application/json; charset=utf-8';
     var loopCount = 1;
+    var user = null;
 
     $("#btnAnotherUser").live("click", function () {
         $("#user_email").val("");
@@ -79,59 +80,16 @@ var Index = function () {
     };
     
     var handleLoginSection = function () {
-        /* ENABLE FOR TESTING ONLY */
-        //localStorage.setItem("oAuthTokenType", "bearer");
-        //localStorage.setItem("oAuthToken", "bb42eb183dd11df6e258ca669d7089a0");
-        //localStorage.setItem("tokenExpiry", "315568999");
-        //localStorage.setItem("timelapseUserId", "azharmalik3")
-        //localStorage.setItem("timelapseUsername", "Azhar Malik");
-        /* --------- END --------- */
-        if (localStorage.getItem("oAuthToken") != null && localStorage.getItem("oAuthToken") != undefined) {
+        
+        if (localStorage.getItem("api_id") != null && localStorage.getItem("api_id") != undefined &&
+            localStorage.getItem("api_key") != null && localStorage.getItem("api_key") != undefined) {
+            user = JSON.parse(localStorage.getItem("user"));
             getMyTimelapse();
-            getUsersInfo();
         }
         else {
+            window.location = 'login.html';
             $("#divTimelapses").html('');
             $(".fullwidthbanner-container").show();
-
-            var stringHash = window.location.hash;
-            
-            if (stringHash != "")
-            {
-                var hasToken = getParameterByName('access_token', "?" + stringHash.substring(1));
-                
-                if (hasToken != "" && hasToken != null) {
-                    var hasTokenType = getParameterByName('token_type', window.location.hash);
-                    var tokenExpiry = getParameterByName('expires_in', window.location.hash);
-                    $.ajax({
-                        type: 'POST',
-                        url: utilsApi + '/tokeninfo',
-                        dataType: 'json',
-                        data: { token_endpoint: "https://api.evercam.io/oauth2/tokeninfo?access_token=" + hasToken },
-                        ContentType: 'application/x-www-form-urlencoded',
-                        success: function (res) {
-                            if (res.userid != "null" && res.userid != '') {
-                                var userId = res.userid;
-                                localStorage.setItem("oAuthTokenType", hasTokenType);
-                                localStorage.setItem("oAuthToken", hasToken);
-                                localStorage.setItem("tokenExpiry", tokenExpiry);
-
-                                localStorage.setItem("timelapseUserId", userId);
-                                localStorage.setItem("timelapseUsername", userId);
-                                window.location.hash = '';
-                                getUsersInfo();
-                                getCameras(false);
-
-                            } else window.location = 'login.html';
-                        },
-                        error: function (xhr, textStatus) {
-
-                        }
-                    });
-                } else
-                    window.location = 'login.html';
-            } else
-                window.location = 'login.html';
             
             $(".default-timelapse").show();
             $("#liUsername").hide();
@@ -156,11 +114,9 @@ var Index = function () {
 
     var handleLogout = function() {
         $("#lnkLogout").bind("click", function() {
-            localStorage.removeItem("oAuthToken");
-            localStorage.removeItem("tokenExpiry");
-            localStorage.removeItem("oAuthTokenType");
-            localStorage.removeItem("timelapseUserId");
-            localStorage.removeItem("timelapseUsername");
+            localStorage.removeItem("api_id");
+            localStorage.removeItem("api_key");
+            localStorage.removeItem("user");
             localStorage.removeItem("timelapseCameras");
             localStorage.removeItem("sharedcameras");
             window.location = 'login.html';
@@ -168,7 +124,7 @@ var Index = function () {
     };
 
     var handleNewTimelapse = function() {
-        $("#lnNewTimelapse").bind("click", function() {
+        $("#lnNewTimelapse").on("click", function () {
             showTimelapseForm();
         });
 
@@ -212,14 +168,11 @@ var Index = function () {
         $("#divLoadingTimelapse").fadeOut();
     });
 
-    var showTimelapseForm = function() {
-        $.get('NewTimelapse.html', function (data) {
+    var showTimelapseForm = function () {
+        $.get('NewTimelapse.html?' + Math.random(), function (data) {
             $("#newTimelapse").html(data);
             $("#lnNewTimelapse").hide();
             $("#lnNewTimelapseCol").show();
-            //Uncomment when fixed add camera functionality
-            //$("#lnNewCamera").show();
-            //$("#lnNewCameraCol").hide();
             handleFileupload();
             getCameras(true);
             $('.timerange').timepicker({
@@ -357,15 +310,15 @@ var Index = function () {
             }
         }
         
-        var camCode = "/users/" + localStorage.getItem("timelapseUserId");
+        var camCode = "/users/" + user.id;
         if ($("#txtTimelapseId").val() != "") {
             ApiAction = 'PUT';
             apiContentType = "application/x-www-form-urlencoded";
-            camCode = "/" + $("#txtCameraCode" + timelapseId).val() + "/users/" + localStorage.getItem("timelapseUserId");
+            camCode = "/" + $("#txtCameraCode" + timelapseId).val() + "/users/" + user.id;
         }
         var o = {
             "camera_eid": $("#ddlCameras" + timelapseId).val(),
-            "access_token": localStorage.getItem("oAuthToken"),
+            "access_token": "",
             "from_time": fromTime,
             "to_time": toTime,
             "from_date": fromDate,
@@ -500,8 +453,6 @@ var Index = function () {
         $("#divAlert0").removeClass("alert-error").addClass("alert-info");
         $("#divAlert0").slideDown();
         $("#divAlert0 span").html('<img src="assets/img/loader3.gif"/>&nbsp;Saving Camera');
-        //Evercam.setBasicAuth("", "", localStorage.getItem("oAuthToken"));
-        //Evercam.Camera.create(o);
         $.ajax({
             type: "POST",
             url: EvercamApi + "/cameras.json",
@@ -511,10 +462,7 @@ var Index = function () {
             },
             data: o,
             dataType: 'json',
-            ContentType: "application/x-www-form-urlencoded",//'application/json; charset=utf-8',
-            beforeSend: function (xhrObj) {
-                xhrObj.setRequestHeader("Authorization", localStorage.getItem("oAuthTokenType") + " " + localStorage.getItem("oAuthToken"));
-            },
+            ContentType: "application/x-www-form-urlencoded",
             success: function (data) {
                 $("#divAlert0 span").html('Camera saved.');
                 $("#txtCameraUniqueId").val('');
@@ -594,12 +542,12 @@ var Index = function () {
         $("#newTimelapse").html("");
         $("#newTimelapse").fadeOut();
 
-        $("#displayUsername").html(localStorage.getItem("timelapseUsername"));
+        $("#displayUsername").html(user.firstname + " " + user.lastname);
         $("#divLoadingTimelapse").fadeIn();
         $("#divLoadingTimelapse").html('<img src="assets/img/loader3.gif" alt="Loading..."/>&nbsp;Fetching Timelapses');
         $.ajax({
             type: 'GET',
-            url: timelapseApiUrl + "/users/" + localStorage.getItem("timelapseUserId"),
+            url: timelapseApiUrl + "/users/" + user.username,
             dataType: 'json',
             contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
             success: function(data) {
@@ -854,7 +802,7 @@ var Index = function () {
         var status = control.attr('data-val') == 'stop' ? 7 : 1;
         $.ajax({
             type: 'POST',
-            url: timelapseApiUrl + "/" + camera_code + "/status/" + status + "/users/" + localStorage.getItem("timelapseUserId"),
+            url: timelapseApiUrl + "/" + camera_code + "/status/" + status + "/users/" + user.id,
             dataType: 'json',
             contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
             success: function (response) {
@@ -882,22 +830,15 @@ var Index = function () {
         var id = clickedTab.attr("data-val");
         $.ajax({
             type: "GET",
-            crossDomain: true,
             url: timelapseApiUrl + "/" + id,
-            beforeSend: function (xhrObj) {
-                //xhrObj.setRequestHeader("Authorization", localStorage.getItem("oAuthTokenType") + " " + localStorage.getItem("oAuthToken"));
-            },
-            //data: { include_shared: true },
-            contentType: "application/json; charset=utf-8",
+            data: { },
+            contentType: "application/x-www-form-urlencoded; charset=UTF-8",
             dataType: "json",
             success: function (res) {
                 $.get('NewTimelapse.html', function (data) {
                     $("#newTimelapse").html(data);
                     $("#lnNewTimelapse").hide();
                     $("#lnNewTimelapseCol").show();
-                    //Uncomment when fixed add camera functionality
-                    //$("#lnNewCamera").show();
-                    //$("#lnNewCameraCol").hide();
                     handleFileupload();
                     getCameras(true, res.camera_id);
                     
@@ -921,10 +862,8 @@ var Index = function () {
                     if (!res.is_time_always) {
                         $("#chkTimeRange0").attr("checked", "checked");
                         $("#divTimeRange0").slideDown();
-                        //var d = new Date(res.from_date);
-                        $("#txtFromTimeRange0").val(FormatNumTo2(fDt.getHours()) + ":" + FormatNumTo2(fDt.getMinutes()));//res.from_date.substring(ind, ind + 5)); //11+5=16
-                        //d = new Date(res.to_date);
-                        $("#txtToTimeRange0").val(FormatNumTo2(tDt.getHours()) + ":" + FormatNumTo2(tDt.getMinutes()));//res.to_date.substring(ind, ind + 5));
+                        $("#txtFromTimeRange0").val(FormatNumTo2(fDt.getHours()) + ":" + FormatNumTo2(fDt.getMinutes()));
+                        $("#txtToTimeRange0").val(FormatNumTo2(tDt.getHours()) + ":" + FormatNumTo2(tDt.getMinutes()));
                     }
                     if (!res.is_date_always) {
                         $("#chkDateRange0").attr("checked", "checked");
@@ -998,7 +937,7 @@ var Index = function () {
     var reloadStats = function(code, img) {
         $.ajax({
             type: 'GET',
-            url: timelapseApiUrl + "/" + code + "/users/" + localStorage.getItem("timelapseUserId"),
+            url: timelapseApiUrl + "/" + code + "/users/" + user.id,
             dataType: 'json',
             ContentType: 'application/json; charset=utf-8',
             timeout: 15000,
@@ -1023,7 +962,7 @@ var Index = function () {
                         $("#tdCreated" + code).html(data.created_date);
                     }
                     if (data.status_tag != null)
-                        $("#tdStatus" + code).html(data.status_tag);
+                        $("#spnStatus" + code).html(data.status_tag);
                     $("#imgRef" + data.id).attr("src", "assets/img/refres-tile.png");
                 }
             },
@@ -1085,11 +1024,8 @@ var Index = function () {
         $.ajax({
             type: "GET",
             crossDomain: true,
-            url: EvercamApi + "/cameras.json",
-            beforeSend: function(xhrObj) {
-                xhrObj.setRequestHeader("Authorization", localStorage.getItem("oAuthTokenType") + " " + localStorage.getItem("oAuthToken"));
-            },
-            data: { user_id: localStorage.getItem("timelapseUserId") },
+            url: EvercamApi + "/cameras.json?api_id=" + localStorage.getItem("api_id") + "&api_key=" + localStorage.getItem("api_key"),
+            data: { user_id: user.username },
             contentType: "application/json; charset=utf-8",
             dataType: "json",
             success: function(res) {
@@ -1110,12 +1046,14 @@ var Index = function () {
                     css = 'offlinec';
                 if (cams.cameras[i].rights.indexOf("snapshot") > -1) {
                     var isSelect = '';
+                    var thumbnail_url = cams.cameras[i].thumbnail_url;
+                    if (cams.cameras[i].thumbnail_url == null || cams.cameras[i].thumbnail_url == undefined || cams.cameras[i].thumbnail_url == "")
+                        thumbnail_url = "https://media.evercam.io/v1/cameras/" + cams.cameras[i].id + "/thumbnail?api_id=" + localStorage.getItem("api_id") + "&api_key=" + localStorage.getItem("api_key");
                     if (cameraId == cams.cameras[i].id) {
                         isSelect = 'selected="selected"';
-                        loadSelectedCamImage(cameraId);
+                        $("#imgPreview").attr('src', thumbnail_url);
                     }
-                    if (cams.cameras[i].thumbnail_url != null && cams.cameras[i].thumbnail_url != undefined)
-                        $("#ddlCameras0").append('<option class="' + css + '" data-val="' + cams.cameras[i].thumbnail_url + '" ' + isSelect + ' value="' + cams.cameras[i].id + '" >' + cams.cameras[i].name + '</option>');
+                    $("#ddlCameras0").append('<option class="' + css + '" data-val="' + thumbnail_url + '" ' + isSelect + ' value="' + cams.cameras[i].id + '" >' + cams.cameras[i].name + '</option>');
                 }
                 else
                     console.log("Insufficient rights: " + cams.cameras[i].id);
@@ -1137,36 +1075,10 @@ var Index = function () {
     var format = function(state) {
         if (!state.id) return state.text;
         if (state.id == "0") return state.text;
-        //return "<img class='flag' src='assets/img/" + state.css + ".png'/>&nbsp;&nbsp;" + state.text;
         if (state.element[0].attributes[1].nodeValue == "null")
             return "<table style='width:100%;'><tr><td style='width:90%;'><img style='width:35px;height:30px;' class='flag' src='assets/img/cam-img-small.jpg'/>&nbsp;&nbsp;" + state.text + "</td><td style='width:10%;' align='right'>" + "<img style='margin-top: -6px;' class='flag' src='assets/img/" + state.css + ".png'/>" + "</td></tr></table>";
         else
             return "<table style='width:100%;'><tr><td style='width:90%;'><img style='width:35px;height:30px;' class='flag' src='" + state.element[0].attributes[1].nodeValue + "'/>&nbsp;&nbsp;" + state.text + "</td><td style='width:10%;' align='right'>" + "<img class='flag' style='margin-top: -6px;' src='assets/img/" + state.css + ".png'/>" + "</td></tr></table>";
-    };
-
-    var getUsersInfo = function() {
-        $.ajax({
-            type: "GET",
-            crossDomain: true,
-            xhrFields: {
-                withCredentials: true
-            },
-            url: EvercamApi + "/users/" + localStorage.getItem("timelapseUserId") + ".json",
-            beforeSend: function(xhrObj) {
-                xhrObj.setRequestHeader("Authorization", localStorage.getItem("oAuthTokenType") + " " + localStorage.getItem("oAuthToken"));
-            },
-            contentType: "application/json; charset=utf-8",
-            dataType: "json",
-            success: function(res) {
-                loggedInUser = res.users[0];
-                if (res.users[0].firstname == "" && res.users[0].lastname == "")
-                    return;
-                localStorage.setItem("timelapseUsername", res.users[0].firstname + " " + res.users[0].lastname);
-                $("#displayUsername").html(res.users[0].firstname + " " + res.users[0].lastname)
-            },
-            error: function(xhrc, ajaxOptionsc, thrownErrorc) {
-            }
-        });
     };
 
     $('.commonLinks-icon').live('click', function (e) {
@@ -1214,11 +1126,8 @@ var Index = function () {
         $("#tab" + code).fadeOut(1000, function() {
             $.ajax({
                 type: "DELETE",
-                url: timelapseApiUrl + "/" + code + "/users/" + localStorage.getItem("timelapseUserId"),
-                /*beforeSend: function (xhrObj) {
-                    xhrObj.setRequestHeader("Authorization", "Basic " + localStorage.getItem("oAuthToken"));
-                },*/
-                contentType: "application/x-www-form-urlencoded",//"text/plain; charset=utf-8",
+                url: timelapseApiUrl + "/" + code + "/users/" + user.username,
+                contentType: "application/x-www-form-urlencoded",
                 dataType: "json",
                 success: function(res) {
                     $("#tab" + code).remove();
@@ -1271,11 +1180,12 @@ var Index = function () {
 
     $("#ddlCameras0").live("change", function () {
         var cameraId = $(this).val();
-        //$("#imgCamStatus").hide();
-        loadSelectedCamImage(cameraId);
+        var thumbnail_url = $(".flag").attr("src");
+        $("#imgPreview").attr('src', thumbnail_url);
     });
 
     var loadSelectedCamImage = function (cameraId) {
+        return;
         $("#imgPreview").hide();
         $("#imgPreviewLoader").show();
         $("#imgPreviewLoader").attr('src', 'assets/img/ajaxloader.gif');
@@ -1283,10 +1193,7 @@ var Index = function () {
         $.ajax({
             type: "GET",
             crossDomain: true,
-            url: EvercamApi + "/cameras/" + cameraId + "/recordings/snapshots/latest.json",
-            beforeSend: function (xhrObj) {
-                xhrObj.setRequestHeader("Authorization", localStorage.getItem("oAuthTokenType") + " " + localStorage.getItem("oAuthToken"));
-            },
+            url: EvercamApi + "/cameras/" + cameraId + "/recordings/snapshots/latest.json?api_id=" + localStorage.getItem("api_id") + "&api_key=" + localStorage.getItem("api_key"),
             data: { with_data: true },
             contentType: "application/json; charset=utf-8",
             dataType: "json",

@@ -5,7 +5,8 @@ var Login = function () {
     var EvercamApi = "https://api.evercam.io/v1";
         
     var onBodyLoad = function () {
-        if (localStorage.getItem("oAuthToken") != null && localStorage.getItem("oAuthToken") != undefined)
+        if (localStorage.getItem("api_id") != null && localStorage.getItem("api_id") != undefined &&
+            localStorage.getItem("api_key") != null && localStorage.getItem("api_key") != undefined)
             window.location = 'index.html';
         $("#country").select2({
             placeholder: '<i class="icon-map-marker"></i>&nbsp;Select a Country',
@@ -164,12 +165,64 @@ var Login = function () {
         });
     }
 
+    var login = function () {
+        $("#loginRequest1").on("click", function () {
+            var username = $("#txtUsername").val();
+            var password = $("#txtPassword").val();
+            if (username == "" || password == "")
+            {
+                alert_notification(".bb-alert", "Invalid login/password combination");
+                return;
+            }
+            $.ajax({
+                type: 'GET',
+                crossDomain: true,
+                url: EvercamApi + "/users/" + username + "/credentials?password=" + password,
+                data: { },
+                dataType: 'json',
+                ContentType: 'application/json; charset=utf-8',
+                success: function (response) {
+                    get_user(username, response.api_id, response.api_key)
+                },
+                error: function (xhr, textStatus) {
+                    alert_notification(".bb-alert", xhr.responseJSON.message);
+                }
+            });
+        });
+    }
+
+    var get_user = function (username, api_id, api_key) {
+        $.ajax({
+            type: 'GET',
+            crossDomain: true,
+            url: EvercamApi + "/users/" + username + "?api_id=" + api_id + "&api_key=" + api_key,
+            data: {},
+            dataType: 'json',
+            ContentType: 'application/json; charset=utf-8',
+            success: function (response) {
+                localStorage.setItem("api_id", api_id);
+                localStorage.setItem("api_key", api_key);
+                localStorage.setItem("user", JSON.stringify(response.users[0]));
+                window.location = 'index.html';
+            },
+            error: function (xhr, textStatus) {
+                alert_notification(".bb-alert", xhr.responseJSON.message);
+            }
+        });
+    }
+
+    var alert_notification = function (selector, message) {
+        var elem = $(selector);
+        elem.find("span").html(message);
+        elem.delay(200).fadeIn().delay(4000).fadeOut();
+    }
+
     return {
         //main function to initiate the module
         init: function () {
             onBodyLoad();
             handleRegisterUser();
-            //getImageFromCamera();
+            login();
         }
 
     };

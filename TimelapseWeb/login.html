@@ -90,9 +90,26 @@
                         <div id="main" class="main" role="main">
 
                             <div class="column thin">
+                                <div class="bb-alert alert alert-error" style="display: none;">
+                                    <span>Invalid login/password combination</span>
+                                </div>
                                 <section class="auth white login-box">
-                                    <div class="singin-text text-center">Already have an account?</div><!--https://dashboard.evercam.io/oauth2/authorize?response_type=code&client_id=c4203c3e&scope=cameras:view:all&redirect_uri=http://astimegoes.by-->
-                                    <div class="singin-text text-center"><a id="loginRequest1" href="https://auth.evercam.io/oauth2/authorize?response_type=token&scope=cameras:list:all+cameras:view:all+user:view:all+snapshots:list:all+snapshots:view:all+cameras:snapshot:all+cameras:edit:all&client_id=c4203c3e&redirect_uri=http://timelapse.evercam.io/"><img src="assets/img/ecin.png" border="0" /></a></div>
+                                    <div class="singin-text text-center">Already have an account?</div>
+                                    <div id="divLogin" class="auth-options">
+                                        <div>
+                                            <form class="login-form form-inline">
+                                                <div class="unit text focused">
+                                                    <label for="txtUsername">Username Or Email:</label>
+                                                    <input autofocus="autofocus" id="txtUsername" name="txtUsername" class="width60Per" size="30" type="text" value="">
+                                                </div>
+                                                <div class="unit text">
+                                                    <label for="txtPassword">Password:</label>
+                                                    <input id="txtPassword" name="txtPassword" size="30" class="width60Per" type="password" value="">
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                    <div class="singin-text text-center"><a id="loginRequest1" href="javascript:;"><img src="assets/img/ecin.png" border="0" /></a></div>
                                     <div class="singin-text text-center">- or -</div>
 
                                     <div id="divRegister" class="auth-options hide">

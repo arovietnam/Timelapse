@@ -556,13 +556,26 @@ margin-bottom:35px;
 .width60Per{width:60%;}
 
 .img-box{
+    background-image: url(../img/cam-img.jpg);
+    border-radius:4px;
     border: 1px solid rgba(0, 0, 0, 0.15);
     -moz-border-radius:4px;
     -ms-border-radius:4px;
     -webkit-border-radius:4px;
-    border-radius:4px;
+    width: 222px;
+    height: 147px;
 }
 .margin-left0{margin-left:0px;}
 .margin-right0{margin-right:0px;}
 .margin-top0{margin-top:0px;}
 .margin-bottom0{margin-bottom:0px;}
+
+.bb-alert {
+    left: 50%;
+    margin-left: -142px;
+    padding: 0.6em 1em;
+    position: fixed;
+    text-align: center;
+    width: 315px;
+    z-index: 99;
+}
