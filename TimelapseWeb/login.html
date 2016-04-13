@@ -90,28 +90,32 @@
                         <div id="main" class="main" role="main">
 
                             <div class="column thin">
-                                <div class="bb-alert alert alert-error" style="display: none;">
+                                <div class="bb-alert alert login-alert-error" style="display: none;">
                                     <span>Invalid login/password combination</span>
                                 </div>
                                 <section class="auth white login-box">
-                                    <div class="singin-text text-center">Already have an account?</div>
+                                <div id="evercam-login">
+                                <div id="Loaderlogin" class="hide">
+                                  <img src="assets/img/ajax-loading.gif" alt="loading" />
+                                </div>
+                                    <div class="singin-text text-center margin-bottom30">Already have an evercam account?</div>
                                     <div id="divLogin" class="auth-options">
                                         <div>
-                                            <form class="login-form form-inline">
+                                            <form class="login-form">
                                                 <div class="unit text focused">
                                                     <label for="txtUsername">Username Or Email:</label>
-                                                    <input autofocus="autofocus" id="txtUsername" name="txtUsername" class="width60Per" size="30" type="text" value="">
+                                                    <input autofocus="autofocus" id="txtUsername" name="txtUsername" class="width100Per" size="30" type="text" value="">
                                                 </div>
                                                 <div class="unit text">
                                                     <label for="txtPassword">Password:</label>
-                                                    <input id="txtPassword" name="txtPassword" size="30" class="width60Per" type="password" value="">
+                                                    <input id="txtPassword" name="txtPassword" size="30" class="width100Per" type="password" value="">
                                                 </div>
                                             </form>
                                         </div>
                                     </div>
                                     <div class="singin-text text-center"><a id="loginRequest1" href="javascript:;"><img src="assets/img/ecin.png" border="0" /></a></div>
                                     <div class="singin-text text-center">- or -</div>
-
+                                </div>
                                     <div id="divRegister" class="auth-options hide">
                                         <div id="LoaderRegister" class="hide">
                                             <img src="assets/img/ajax-loading.gif" alt="loading" />
@@ -121,22 +125,22 @@
                                             <form class="new_user login-form form-inline">
                                                 <div class="unit text focused">
                                                     <label for="first_name">First Name:</label>
-                                                    <input autofocus="autofocus" id="first_name" name="first_name" class="width60Per" size="30" type="text" value="">
+                                                    <input autofocus="autofocus" id="first_name" name="first_name" class="width96Per" size="30" type="text" value="">
                                                     <span id="spnReqFN" class="font-size16">*</span>
                                                 </div>
                                                 <div class="unit text">
                                                     <label for="last_name">Last Name:</label>
-                                                    <input id="last_name" name="last_name" size="30" class="width60Per" type="text" value="">
+                                                    <input id="last_name" name="last_name" size="30" class="width96Per" type="text" value="">
                                                     <span id="spnReqLN" class="font-size16">*</span>
                                                 </div>
                                                 <div class="unit text">
                                                     <label for="user_name">Username:</label>
-                                                    <input id="user_name" name="user_name" size="30" class="width60Per" type="text" value="">
+                                                    <input id="user_name" name="user_name" size="30" class="width96Per" type="text" value="">
                                                     <span id="spnReqUN" class="font-size16">*</span>
                                                 </div>
                                                 <div id="divEmailInput" class="unit text" data-validate="email" data-required="">
                                                     <label for="user_email">Email:</label>
-                                                    <input id="user_email" name="email" size="30" class="width60Per" type="email" value="">
+                                                    <input id="user_email" name="email" size="30" class="width96Per" type="email" value="">
                                                     <span id="spnReqEmail" class="font-size16">*</span>
                                                 </div>
                                                 <div id="divEmail" class="unit text hide">
@@ -144,12 +148,12 @@
                                                 </div>
                                                 <div class="unit text">
                                                     <label for="password">Password:</label>
-                                                    <input id="password" name="password" class="width60Per" type="password" value="">
+                                                    <input id="password" name="password" class="width96Per" type="password" value="">
                                                     <span id="spnReqPass" class="font-size16">*</span>
                                                 </div>
                                                 <div class="unit text">
                                                     <label for="country">Country:</label>
-                                                    <select id="country" name="country" class="width60Per">
+                                                    <select id="country" name="country" class="width96Per">
                                                         <option value=""></option>
                                                         <option value="AF" class="azhar">Afghanistan</option>
                                                         <option value="AL">Albania</option>

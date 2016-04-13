@@ -37,6 +37,7 @@ var Login = function () {
 
     var handleRegisterUser = function () {
         $(".register_user").bind("click", function () {
+            $("#evercam-login").slideUp(900);
             if (exitRegister) return;
             if (!createUserState) {
                 createUserState = true;
@@ -46,6 +47,7 @@ var Login = function () {
             } else {
                 if ($("#first_name").val() == "" && $("#last_name").val() == "" && $("#user_name").val() == "" && $("#user_email").val() == "" && $("#password").val() == "" && $("#country").val() == "") {
                     $('.alert-error').slideDown();
+                    $("#spnCamcel").fadeIn();
                     $('.alert-error span').html('Please enter required fields.');
                     $(".font-size16").addClass("font-color-red");
                     return
@@ -139,6 +141,7 @@ var Login = function () {
         });
 
         $(".cancel_register").bind("click", function () {
+            $("#evercam-login").slideDown(900);
             createUserState = false;
             $("#spnCamcel").fadeOut();
             $("#divRegister").slideUp(900, function () {
@@ -167,12 +170,20 @@ var Login = function () {
 
     var login = function () {
         $("#loginRequest1").on("click", function () {
+            $('#Loaderlogin').css({
+              position: 'absolute',
+              top: ($('#evercam-login').height() / 2),
+              'z-index': '5',
+              left: ($('#evercam-login').width() / 2),
+            });
+            $('#Loaderlogin').show();
             var username = $("#txtUsername").val();
             var password = $("#txtPassword").val();
             if (username == "" || password == "")
             {
-                alert_notification(".bb-alert", "Invalid login/password combination");
-                return;
+              alert_notification(".bb-alert", "Invalid login/password combination");
+              $('#Loaderlogin').hide();
+              return;
             }
             $.ajax({
                 type: 'GET',
@@ -186,6 +197,7 @@ var Login = function () {
                 },
                 error: function (xhr, textStatus) {
                     alert_notification(".bb-alert", xhr.responseJSON.message);
+                    $('#Loaderlogin').hide();
                 }
             });
         });
@@ -207,6 +219,7 @@ var Login = function () {
             },
             error: function (xhr, textStatus) {
                 alert_notification(".bb-alert", xhr.responseJSON.message);
+                $('#Loaderlogin').hide();
             }
         });
     }
