@@ -71,7 +71,13 @@ namespace Timelapser
                 //// User AuthToken is Unauthorized to access certain cameras, e.g. wayra_office
                 //// may be shared cameras ?
                 if (!string.IsNullOrEmpty(timelapse.OauthToken))
-                    Evercam = new Evercam(timelapse.OauthToken);
+                {
+                    string[] cred = timelapse.OauthToken.Split(':');
+                    if (cred.Length >= 2)
+                        Evercam = new Evercam(cred[0], cred[1]);
+                    else
+                        Evercam = new Evercam(timelapse.OauthToken);
+                }
 
                 for (int i = 1; i <= TRY_COUNT; i++)
                 {

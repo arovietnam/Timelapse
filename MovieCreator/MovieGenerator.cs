@@ -149,7 +149,7 @@ namespace EvercamMovieMaker
                 archiveInfo.ID = archive_id;
                 archiveInfo.Status = status;
                 archiveInfo.Frames = total_frames;
-                //evercam.UpdateArchive(archiveInfo);
+                evercam.UpdateArchive(archiveInfo);
                 return true;
             }
             catch (Exception ex) {

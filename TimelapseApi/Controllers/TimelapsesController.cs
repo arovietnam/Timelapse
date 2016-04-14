@@ -120,7 +120,13 @@ namespace TimelapseApi.Controllers
             Evercam evercam = new Evercam(Settings.EvercamClientID, Settings.EvercamClientSecret, Settings.EvercamClientUri);
             Timelapse t = TimelapseDao.Get(code);
             if (!string.IsNullOrEmpty(t.OauthToken))
-                evercam = new Evercam(t.OauthToken);
+            {
+                string[] cred = t.OauthToken.Split(':');
+                if (cred.Length >= 2)
+                    evercam = new Evercam(cred[0], cred[1]);
+                else
+                    evercam = new Evercam(t.OauthToken);
+            }
 
             Camera c = evercam.GetCamera(t.CameraId);
             
@@ -172,8 +178,14 @@ namespace TimelapseApi.Controllers
                 Evercam.SANDBOX = Settings.EvercamSandboxMode;
                 Evercam evercam = new Evercam(Settings.EvercamClientID, Settings.EvercamClientSecret, Settings.EvercamClientUri);
                 if (!string.IsNullOrEmpty(t.OauthToken))
-                    evercam = new Evercam(t.OauthToken);
-
+                {
+                    string[] cred = t.OauthToken.Split(':');
+                    if (cred.Length >= 2)
+                        evercam = new Evercam(cred[0], cred[1]);
+                    else
+                        evercam = new Evercam(t.OauthToken);
+                }
+                
                 Camera c = evercam.GetCamera(t.CameraId);
                 string cleanCameraId = BLL.Common.Utils.RemoveSymbols(c.ID);
                 string filePath = Path.Combine(Settings.BucketUrl, Settings.BucketName, cleanCameraId, tid.ToString());
@@ -266,7 +278,13 @@ namespace TimelapseApi.Controllers
                 Evercam.SANDBOX = Settings.EvercamSandboxMode;
                 Evercam evercam = new Evercam(Settings.EvercamClientID, Settings.EvercamClientSecret, Settings.EvercamClientUri);
                 if (!string.IsNullOrEmpty(t.OauthToken))
-                    evercam = new Evercam(t.OauthToken);
+                {
+                    string[] cred = t.OauthToken.Split(':');
+                    if (cred.Length >= 2)
+                        evercam = new Evercam(cred[0], cred[1]);
+                    else
+                        evercam = new Evercam(t.OauthToken);
+                }
 
                 Camera c = evercam.GetCamera(t.CameraId);
                 string cleanCameraId = BLL.Common.Utils.RemoveSymbols(c.ID);

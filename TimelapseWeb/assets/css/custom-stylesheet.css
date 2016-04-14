@@ -1,4 +1,4 @@
-﻿.red {
+.red {
     color: #ff0000;
 }
 
@@ -263,7 +263,7 @@ margin-bottom:35px;
 }
 
 .list-style-none{list-style:none;}
-.white{background-color:#fff;}
+.white{background-color: #FFFFFF;}
 
 .video-bg-width{
     background-color:#000000;width:/*471px*/100%;
@@ -309,8 +309,10 @@ margin-bottom:35px;
 }
 .responsivenav{background-color:#fff;}
 
-.text-center{text-align:center;font-size:14px;}
-.singin-text{margin-bottom:15px;}
+.text-center{text-align:center;font-size:16px;}
+.singin-text {
+  margin-bottom:15px;
+}
 
 .cancelLink{
     text-decoration:underline;
@@ -556,13 +558,60 @@ margin-bottom:35px;
 .width60Per{width:60%;}
 
 .img-box{
+    background-image: url(../img/cam-img.jpg);
+    border-radius:4px;
     border: 1px solid rgba(0, 0, 0, 0.15);
     -moz-border-radius:4px;
     -ms-border-radius:4px;
     -webkit-border-radius:4px;
-    border-radius:4px;
+    width: 222px;
+    height: 147px;
 }
 .margin-left0{margin-left:0px;}
 .margin-right0{margin-right:0px;}
 .margin-top0{margin-top:0px;}
 .margin-bottom0{margin-bottom:0px;}
+
+.bb-alert {
+    left: 50%;
+    margin-left: -142px;
+    padding: 0.6em 1em;
+    position: fixed;
+    text-align: center;
+    width: 315px;
+    z-index: 99;
+}
+
+.default-timelapse .container .column>section {
+    border: none;
+}
+
+.auth-options form .unit label {
+  width: 100%;
+}
+
+.width100Per {
+  width: 100%;
+}
+
+.width96Per {
+  width: 96%;
+}
+
+html.sessions body .column.thin {
+  width: 450px;
+}
+
+.margin-bottom30 {
+  margin-bottom: 30px;
+}
+
+.singin-text img {
+  width: 200px;
+}
+
+.login-alert-error {
+  color: #b94a48;
+  background-color: #f2dede;
+  border-color: #eed3d7;
+}

@@ -5,18 +5,30 @@ var Login = function () {
     var EvercamApi = "https://api.evercam.io/v1";
         
     var onBodyLoad = function () {
-        if (localStorage.getItem("oAuthToken") != null && localStorage.getItem("oAuthToken") != undefined)
-            window.location = 'index.html';
-        $("#country").select2({
-            placeholder: '<i class="icon-map-marker"></i>&nbsp;Select a Country',
-            allowClear: true,
-            formatResult: format,
-            formatSelection: format,
-            escapeMarkup: function (m) {
-                return m;
-            }
-        });
+        if (getQueryStringByName("api_id") != null && getQueryStringByName("api_key") != null && getQueryStringByName("id") != null)
+            get_user(getQueryStringByName("id"), getQueryStringByName("api_id"), getQueryStringByName("api_key"));
+        else {
+            if (localStorage.getItem("api_id") != null && localStorage.getItem("api_id") != undefined &&
+                localStorage.getItem("api_key") != null && localStorage.getItem("api_key") != undefined)
+                window.location = 'index.html';
+            $("#country").select2({
+                placeholder: '<i class="icon-map-marker"></i>&nbsp;Select a Country',
+                allowClear: true,
+                formatResult: format,
+                formatSelection: format,
+                escapeMarkup: function (m) {
+                    return m;
+                }
+            });
+        }
     }
+
+    var getQueryStringByName = function (name) {
+        name = name.replace(/[\[]/, "\\\[").replace(/[\]]/, "\\\]");
+        var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
+            results = regex.exec(location.search);
+        return results == null ? null : decodeURIComponent(results[1].replace(/\+/g, " "));
+    };
 
     var format = function (state) {
         if (!state.id) return state.text; // optgroup
@@ -36,6 +48,7 @@ var Login = function () {
 
     var handleRegisterUser = function () {
         $(".register_user").bind("click", function () {
+            $("#evercam-login").slideUp(900);
             if (exitRegister) return;
             if (!createUserState) {
                 createUserState = true;
@@ -45,6 +58,7 @@ var Login = function () {
             } else {
                 if ($("#first_name").val() == "" && $("#last_name").val() == "" && $("#user_name").val() == "" && $("#user_email").val() == "" && $("#password").val() == "" && $("#country").val() == "") {
                     $('.alert-error').slideDown();
+                    $("#spnCamcel").fadeIn();
                     $('.alert-error span').html('Please enter required fields.');
                     $(".font-size16").addClass("font-color-red");
                     return
@@ -138,6 +152,7 @@ var Login = function () {
         });
 
         $(".cancel_register").bind("click", function () {
+            $("#evercam-login").slideDown(900);
             createUserState = false;
             $("#spnCamcel").fadeOut();
             $("#divRegister").slideUp(900, function () {
@@ -146,30 +161,86 @@ var Login = function () {
         });
     }
 
-    var getImageFromCamera = function () {
+    var loginButton = function () {
+        $("#loginRequest1").on("click", function () {
+            login();
+        });
+    }
+
+    var login = function () {
+        $('#Loaderlogin').css({
+            position: 'absolute',
+            top: ($('#evercam-login').height() / 2),
+            'z-index': '5',
+            left: ($('#evercam-login').width() / 2),
+        });
+        $('#Loaderlogin').show();
+        var username = $("#txtUsername").val();
+        var password = $("#txtPassword").val();
+        if (username == "" || password == "") {
+            alert_notification(".bb-alert", "Invalid login/password combination");
+            $('#Loaderlogin').hide();
+            return;
+        }
         $.ajax({
             type: 'GET',
-            url: 'https://dashboard.evercam.io/v1/cameras/azharmalik354e6fca21f79/snapshot.jpg.json',
-            beforeSend: function (xhrObj) {
-                xhrObj.setRequestHeader("Authorization", localStorage.getItem("oAuthTokenType") + " 6731517ca0ff30248291cdf54392b9ad");
-            },
+            crossDomain: true,
+            url: EvercamApi + "/users/" + username + "/credentials?password=" + password,
+            data: {},
             dataType: 'json',
-            ContentType: 'application/x-www-form-urlencoded',
-            success: function (res) {
-                
+            ContentType: 'application/json; charset=utf-8',
+            success: function (response) {
+                get_user(username, response.api_id, response.api_key)
             },
             error: function (xhr, textStatus) {
+                alert_notification(".bb-alert", xhr.responseJSON.message);
+                $('#Loaderlogin').hide();
+            }
+        });
+    }
 
+    var get_user = function (username, api_id, api_key) {
+        $.ajax({
+            type: 'GET',
+            crossDomain: true,
+            url: EvercamApi + "/users/" + username + "?api_id=" + api_id + "&api_key=" + api_key,
+            data: {},
+            dataType: 'json',
+            ContentType: 'application/json; charset=utf-8',
+            success: function (response) {
+                localStorage.setItem("api_id", api_id);
+                localStorage.setItem("api_key", api_key);
+                localStorage.setItem("user", JSON.stringify(response.users[0]));
+                window.location = 'index.html';
+            },
+            error: function (xhr, textStatus) {
+                alert_notification(".bb-alert", xhr.responseJSON.message);
+                $('#Loaderlogin').hide();
+            }
+        });
+    }
+
+    var alert_notification = function (selector, message) {
+        var elem = $(selector);
+        elem.find("span").html(message);
+        elem.delay(200).fadeIn().delay(4000).fadeOut();
+    }
+
+    var onKeyEnter = function () {
+        $("#txtPassword").on("keyup", function (e) {
+            var code = e.keyCode || e.which;
+            if (code == 13) {
+                login();
             }
         });
     }
 
     return {
-        //main function to initiate the module
         init: function () {
             onBodyLoad();
             handleRegisterUser();
-            //getImageFromCamera();
+            loginButton();
+            onKeyEnter();
         }
 
     };

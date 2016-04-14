@@ -122,7 +122,13 @@ namespace TimelapseAppService
                 Evercam.SANDBOX = Settings.EvercamSandboxMode;
                 Evercam evercam = new Evercam(Settings.EvercamClientID, Settings.EvercamClientSecret, Settings.EvercamClientUri);
                 if (!string.IsNullOrEmpty(timelapse.OauthToken))
-                    evercam = new Evercam(timelapse.OauthToken);
+                {
+                    string[] cred = timelapse.OauthToken.Split(':');
+                    if (cred.Length >= 2)
+                        evercam = new Evercam(cred[0], cred[1]);
+                    else
+                        evercam = new Evercam(timelapse.OauthToken);
+                }
 
                 Camera camera = evercam.GetCamera(timelapse.CameraId);
 
