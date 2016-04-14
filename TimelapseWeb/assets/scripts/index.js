@@ -987,56 +987,7 @@ var Index = function () {
         if (clickedTab.html().indexOf('Settings') >= 0) {
             var container_id = "#setting" + id;
             if ($(container_id).html() == "") {
-                $.get('NewTimelapse.html?' + Math.random(), function (data) {
-                    $(container_id).html(data);
-                    $(container_id + " div.span4").removeClass("span4").addClass("hide");
-                    $(container_id + " div.span8").removeClass("span8").addClass("span12");
-                    $(container_id + " div.main").removeClass("customize-nav").addClass("timelapse-content-box");
-                    $(container_id + " button.formButtonOk").removeClass("formButtonOk").addClass("formButtonEdit");
-                    $(container_id + " button.formButtonEdit").attr("data-val", id);
-                    $(container_id + " button.formButtonCancel").remove();
-                    $(container_id + " div.camera-select").hide()
-                    handleFileupload1(container_id);
-                    $("#ddlCameras0").append('<option class="" data-val="" selected="selected" value="' + $("#camera-code" + id).val() + '" >' + $("#camera-name" + id).val() + '</option>');
-                    $(container_id + " #txtTimelapseId").val(id);
-                    $(container_id + " #txtTitle0").val($("#timelapse-title" + id).val());
-                    $(container_id + " #ddlIntervals0").val($("#timelapse-interval" + id).val());
-                    $(container_id + " #ddlFrameRate0").val(1);
-                    $(container_id + " #txtCameraCode0").val($("#timelapse-code" + id).val())
-                    $(container_id + " #ddlWatermarkPos0").val($("#watermark-position" + id).val());
-                    var watermark_file = $("#watermark-file" + id).val()
-                    if (watermark_file != null && watermark_file != '') {
-                        $(container_id + " #txtLogoFile").val(watermark_file);
-                        $(container_id + " #imgWatermarkLogo").attr('src', watermark_file);
-                        $(container_id + " #imgWatermarkLogo").show();
-                        $(container_id + " .fileinput-button span").html("Change file...");
-                    }
-                    var fDt = new Date($("#from-date" + id).val());
-                    var tDt = new Date($("#to-date" + id).val());
-                    if ($("#time-always" + id).val() == "false") {
-                        $(container_id + " #chkTimeRange0").attr("checked", "checked");
-                        $(container_id + " #divTimeRange0").slideDown();
-                        $(container_id + " #txtFromTimeRange0").val(FormatNumTo2(fDt.getHours()) + ":" + FormatNumTo2(fDt.getMinutes()));
-                        $(container_id + " #txtToTimeRange0").val(FormatNumTo2(tDt.getHours()) + ":" + FormatNumTo2(tDt.getMinutes()));
-                    }
-                    if ($("#date-always" + id).val() == "false") {
-                        $(container_id + " #chkDateRange0").attr("checked", "checked");
-                        $(container_id + " #divDateRange0").slideDown();
-                        $(container_id + " #txtFromDateRange0").val(FormatNumTo2(fDt.getDate()) + "/" + FormatNumTo2(fDt.getMonth() + 1) + "/" + fDt.getFullYear());
-                        $(container_id + " #txtToDateRange0").val(FormatNumTo2(tDt.getDate()) + "/" + FormatNumTo2(tDt.getMonth() + 1) + "/" + tDt.getFullYear());
-                    }
-
-                    $('.timerange').timepicker({
-                        minuteStep: 1,
-                        showSeconds: false,
-                        showMeridian: false,
-                        defaultTime: false
-                    });
-                    var dates = $(".daterange").datepicker({
-                        format: 'dd/mm/yyyy',
-                        minDate: new Date()
-                    });
-                });
+                getEditTimelapseForm(id);
             }
         }
 
