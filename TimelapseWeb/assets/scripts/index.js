@@ -3,7 +3,7 @@ var Index = function () {
     var timelapseApiUrl = "http://timelapse.evercam.io/v1/timelapses";
     var utilsApi = "http://timelapse.evercam.io/v1";
     var ApiAction = 'POST';
-    var apiContentType = 'application/json; charset=utf-8';
+    var apiContentType = 'application/x-www-form-urlencoded; charset=UTF-8';
     var loopCount = 1;
     var user = null;
 
@@ -38,42 +38,6 @@ var Index = function () {
         return str.charAt(0).toUpperCase() + str.substr(1);
     }
 
-    function autoLogIn(code) {
-        var form = document.createElement("form");
-        var element1 = document.createElement("input");
-        var element2 = document.createElement("input");
-        var element3 = document.createElement("input");
-        var element4 = document.createElement("input");
-        var element5 = document.createElement("input");
-
-        form.method = "POST";
-        form.action = "https://dashboard.evercam.io/oauth2/token";
-
-        element1.value = code;
-        element1.name = "code";
-        form.appendChild(element1);
-
-        element2.value = c4203c3e;
-        element2.name = "client_id";
-        form.appendChild(element2);
-
-        element2.value = "55e2df6518ec146e0d968d640064017d";
-        element2.name = "client_secret";
-        form.appendChild(element2);
-
-        element2.value = "http://astimegoes.by";
-        element2.name = "redirect_uri";
-        form.appendChild(element2);
-
-        element2.value = "authorization_code";
-        element2.name = "grant_type";
-        form.appendChild(element2);
-
-        document.body.appendChild(form);
-
-        form.submit();
-    }
-
     var format = function(state) {
         if (!state.id) return state.text; // optgroup
         return "<img class='flag' src='assets/img/flags/" + state.id.toLowerCase() + ".png'/>&nbsp;&nbsp;" + state.text;
@@ -84,7 +48,7 @@ var Index = function () {
         if (localStorage.getItem("api_id") != null && localStorage.getItem("api_id") != undefined &&
             localStorage.getItem("api_key") != null && localStorage.getItem("api_key") != undefined) {
             user = JSON.parse(localStorage.getItem("user"));
-            getMyTimelapse();
+            getCameras(false);
         }
         else {
             window.location = 'login.html';
@@ -173,7 +137,7 @@ var Index = function () {
             $("#newTimelapse").html(data);
             $("#lnNewTimelapse").hide();
             $("#lnNewTimelapseCol").show();
-            handleFileupload();
+            handleFileupload1("#newTimelapse ");
             getCameras(true);
             $('.timerange').timepicker({
                 minuteStep: 1,
@@ -232,22 +196,150 @@ var Index = function () {
             $("#divLoadingTimelapse").fadeIn();
     });
 
-    $(".formButtonOk").live("click", function () {
+    var isValidateDates = function (fromDate, toDate, timelapse_id) {
+        var old_from_date = $("#from-date" + timelapse_id).val();
+        old_from_date = old_from_date.substr(0, old_from_date.split(" ")[0].length);
+
+        var old_to_date = $("#to-date" + timelapse_id).val();
+        old_to_date = old_to_date.substr(0, old_from_date.split(" ")[0].length);
+
+        var to_arr = old_to_date.split("/");
+        var from_arr = old_from_date.split("/");
+
+        var to_date = to_arr[1] + "/" + to_arr[0] + "/" + to_arr[2];
+        var from_date = from_arr[1] + "/" + from_arr[0] + "/" + from_arr[2];
+
+        if (from_date == fromDate && to_date == toDate)
+            return false;
+        else
+            return true;
+    }
+
+    $(".formButtonEdit").live("click", function () {
         var timelapseId = $(this).attr("data-val");
-        $("#divAlert" + timelapseId).removeClass("alert-info").addClass("alert-error");
-        if ($("#ddlCameras" + timelapseId).val() == "") {
-            $("#divAlert" + timelapseId).slideDown();
-            $("#divAlert" + timelapseId + " span").html("Please select camera to continue.");
+        var container_id = "#setting" + timelapseId + " ";
+        $(container_id + "#divAlert0").removeClass("alert-info").addClass("alert-error");
+        if ($(container_id + "#ddlCameras0").val() == "") {
+            $(container_id + "#divAlert0").slideDown();
+            $(container_id + "#divAlert0 span").html("Please select camera to continue.");
             return;
         }
-        if ($("#txtTitle" + timelapseId).val() == '') {
-            $("#divAlert" + timelapseId).slideDown();
-            $("#divAlert" + timelapseId + " span").html("Please enter timelapse title.");
+        if ($(container_id + "#txtTitle0").val() == '') {
+            $(container_id + "#divAlert0").slideDown();
+            $(container_id + "#divAlert0 span").html("Please enter timelapse title.");
             return;
         }
-        if ($("#ddlIntervals" + timelapseId).val() == 0) {
-            $("#divAlert" + timelapseId).slideDown();
-            $("#divAlert" + timelapseId + " span").html("Please select timelapse interval.");
+        if ($(container_id + "#ddlIntervals0").val() == 0) {
+            $(container_id + "#divAlert0").slideDown();
+            $(container_id + "#divAlert0 span").html("Please select timelapse interval.");
+            return;
+        }
+        var d = new Date();
+        var fromDate = d.getDate() + '/' + (d.getMonth() + 1) + '/' + d.getFullYear();
+        var toDate = fromDate;
+        var fromTime = "00:00";
+        var toTime = fromTime;
+        var dateAlways = true;
+        var timeAlways = true;
+        if ($(container_id + "#chkDateRange0").is(":checked")) {
+            dateAlways = false;
+            fromDate = $(container_id + "#txtFromDateRange0").val();
+            if (fromDate == "") {
+                $(container_id + "#divAlert0").slideDown();
+                $(container_id + "#divAlert0 span").html("Please select from date range.");
+                return;
+            }
+            toDate = $(container_id + "#txtToDateRange0").val();
+            if (toDate == "") {
+                $(container_id + "#divAlert0").slideDown();
+                $(container_id + "#divAlert0 span").html("Please select to date range.");
+                return;
+            }
+            if (isValidateDates(fromDate, toDate, timelapseId) &&
+                !validateDates(fromDate, toDate, container_id)) {
+                return;
+            }
+        }
+        if ($(container_id + "#chkTimeRange0").is(":checked")) {
+            timeAlways = false;
+            fromTime = $(container_id + "#txtFromTimeRange0").val();
+            if (fromTime == "") {
+                $(container_id + "#divAlert0").slideDown();
+                $(container_id + "#divAlert0 span").html("Please select from time range.");
+                return;
+            }
+            toTime = $(container_id + "#txtToTimeRange0").val();
+            if (toTime == "") {
+                $(container_id + "#divAlert0").slideDown();
+                $(container_id + "#divAlert0 span").html("Please select to time range.");
+                return;
+            }
+            if (fromTime == toTime) {
+                $(container_id + "#divAlert0").slideDown();
+                $(container_id + "#divAlert0 span").html('To time and from time cannot be same.');
+                return;
+            }
+        }
+        var timezone = "GMT Standard Time";
+        var cams = JSON.parse(localStorage.getItem("timelapseCameras"));
+        for (var i = 0; i < cams.cameras.length; i++) {
+            if (cams.cameras[i].id == $(container_id + "#ddlCameras0").val())
+                timezone = cams.cameras[i].timezone;
+        }
+        
+        ApiAction = 'PUT';
+        apiContentType = "application/x-www-form-urlencoded; charset=UTF-8";
+        camCode = "/" + $(container_id + "#txtCameraCode0").val() + "/users/" + user.id;
+
+        var o = {
+            "camera_eid": $(container_id + "#ddlCameras0").val(),
+            "access_token": localStorage.getItem("api_id") + ":" + localStorage.getItem("api_key"),
+            "from_time": fromTime,
+            "to_time": toTime,
+            "from_date": fromDate,
+            "to_date": toDate,
+            "title": $(container_id + "#txtTitle0").val(),
+            "time_zone": timezone,
+            "enable_md": false,
+            "md_thrushold": 0,
+            "exclude_dark": false,
+            "darkness_thrushold": 0,
+            "privacy": 0,
+            "is_recording": $(container_id + "#chkRecordingTimelapse0").is(":checked"),
+            "is_date_always": dateAlways,
+            "is_time_always": timeAlways,
+            "interval": $(container_id + "#ddlIntervals0").val(),
+            "fps": $(container_id + "#ddlFrameRate0").val()
+        };
+        
+        if ($(container_id + '.table-striped td.name').html() != undefined) {
+            $(container_id + ".fileupload-buttonbar").hide();
+            $(container_id + "#divAlert0").removeClass("alert-error").addClass("alert-info");
+            $(container_id + "#divAlert0").slideDown();
+            $(container_id + "#divAlert0 span").html('<img src="assets/img/loader3.gif"/>&nbsp;Saving Twitter Response');
+            $(container_id + '.table-striped td.start button.btn').click();
+            setTimeout(function () { checkFileUploadAndSave(container_id, camCode, o, $(container_id + ".progress-success").attr("aria-valuemin")); }, 1000);
+        }
+        else
+            checkFileUploadAndSave(container_id, camCode, o, null);
+    });
+
+    $(".formButtonOk").live("click", function () {
+        var container_id = "#newTimelapse ";
+        $(container_id + "#divAlert0").removeClass("alert-info").addClass("alert-error");
+        if ($(container_id + "#ddlCameras0").val() == "") {
+            $(container_id + "#divAlert0").slideDown();
+            $(container_id + "#divAlert0 span").html("Please select camera to continue.");
+            return;
+        }
+        if ($(container_id + "#txtTitle0").val() == '') {
+            $(container_id + "#divAlert0").slideDown();
+            $(container_id + "#divAlert0 span").html("Please enter timelapse title.");
+            return;
+        }
+        if ($(container_id + "#ddlIntervals0").val() == 0) {
+            $(container_id + "#divAlert0").slideDown();
+            $(container_id + "#divAlert0 span").html("Please select timelapse interval.");
             return;
         }
         var d = new Date();
@@ -257,241 +349,141 @@ var Index = function () {
         var toTime = fromTime;
         var dateAlways = true;
         var timeAlways = true;
-        if ($("#chkDateRange" + timelapseId).is(":checked")) {
+        if ($(container_id + "#chkDateRange0").is(":checked")) {
             dateAlways = false;
-            fromDate = $("#txtFromDateRange" + timelapseId).val();
+            fromDate = $(container_id + "#txtFromDateRange0").val();
             if (fromDate == "")
             {
-                $("#divAlert" + timelapseId).slideDown();
-                $("#divAlert" + timelapseId + " span").html("Please select from date range.");
+                $(container_id + "#divAlert0").slideDown();
+                $(container_id + "#divAlert0 span").html("Please select from date range.");
                 return;
             }
-            toDate = $("#txtToDateRange" + timelapseId).val();
+            toDate = $(container_id + "#txtToDateRange0").val();
             if (toDate == "") {
-                $("#divAlert" + timelapseId).slideDown();
-                $("#divAlert" + timelapseId + " span").html("Please select to date range.");
+                $(container_id + "#divAlert0").slideDown();
+                $(container_id + "#divAlert0 span").html("Please select to date range.");
                 return;
             }
-            if (!validateDates(fromDate, toDate, timelapseId)) {
+            if (!validateDates(fromDate, toDate, container_id)) {
                 return;
             }
         }
-        if ($("#chkTimeRange" + timelapseId).is(":checked")) {
+        if ($(container_id + "#chkTimeRange0").is(":checked")) {
             timeAlways = false;
-            fromTime = $("#txtFromTimeRange" + timelapseId).val();
+            fromTime = $(container_id + "#txtFromTimeRange0").val();
             if (fromTime == "") {
-                $("#divAlert" + timelapseId).slideDown();
-                $("#divAlert" + timelapseId + " span").html("Please select from time range.");
+                $(container_id + "#divAlert0").slideDown();
+                $(container_id + "#divAlert0 span").html("Please select from time range.");
                 return;
             }
-            toTime = $("#txtToTimeRange" + timelapseId).val();
+            toTime = $(container_id + "#txtToTimeRange0").val();
             if (toTime == "") {
-                $("#divAlert" + timelapseId).slideDown();
-                $("#divAlert" + timelapseId + " span").html("Please select to time range.");
+                $(container_id + "#divAlert0").slideDown();
+                $(container_id + "#divAlert0 span").html("Please select to time range.");
                 return;
             }
             if (fromTime == toTime) {
-                $("#divAlert" + timelapseId).slideDown();
-                $("#divAlert" + timelapseId + " span").html('To time and from time cannot be same.');
+                $(container_id + "#divAlert0").slideDown();
+                $(container_id + "#divAlert0 span").html('To time and from time cannot be same.');
                 return;
             }
         }
         var timezone = "GMT Standard Time";
         var cams = JSON.parse(localStorage.getItem("timelapseCameras"));
         for (var i = 0; i < cams.cameras.length; i++) {
-            if (cams.cameras[i].id == $("#ddlCameras" + timelapseId).val())
+            if (cams.cameras[i].id == $(container_id + "#ddlCameras0").val())
                 timezone = cams.cameras[i].timezone;
-        }
-        cams = JSON.parse(localStorage.getItem("sharedcameras"));
-        if (cams != null && cams != undefined) {
-            for (var i = 0; i < cams.cameras.length; i++) {
-                if (cams.cameras[i].id == $("#ddlCameras" + timelapseId).val())
-                    timezone = cams.cameras[i].timezone;
-            }
         }
         
         var camCode = "/users/" + user.id;
-        if ($("#txtTimelapseId").val() != "") {
-            ApiAction = 'PUT';
-            apiContentType = "application/x-www-form-urlencoded";
-            camCode = "/" + $("#txtCameraCode" + timelapseId).val() + "/users/" + user.id;
-        }
+        ApiAction = 'POST';
+
         var o = {
-            "camera_eid": $("#ddlCameras" + timelapseId).val(),
-            "access_token": "",
+            "camera_eid": $(container_id + "#ddlCameras0").val(),
+            "access_token": localStorage.getItem("api_id")+":"+localStorage.getItem("api_key"),
             "from_time": fromTime,
             "to_time": toTime,
             "from_date": fromDate,
             "to_date": toDate,
-            "title": $("#txtTitle" + timelapseId).val(),
+            "title": $(container_id + "#txtTitle0").val(),
             "time_zone": timezone,
             "enable_md": false,
             "md_thrushold": 0,
             "exclude_dark": false,
             "darkness_thrushold": 0,
             "privacy": 0,
-            "is_recording": $("#chkRecordingTimelapse" + timelapseId).is(":checked"),
+            "is_recording": $(container_id + "#chkRecordingTimelapse0").is(":checked"),
             "is_date_always": dateAlways,
             "is_time_always": timeAlways,
-            "interval": $("#ddlIntervals" + timelapseId).val(),
-            "fps": $("#ddlFrameRate" + timelapseId).val()
+            "interval": $(container_id + "#ddlIntervals0").val(),
+            "fps": $(container_id + "#ddlFrameRate0").val()
         };
         
-        if ($('.table-striped td.name').html() != undefined) {
-            $(".fileupload-buttonbar").hide();
-            $("#divAlert" + timelapseId).removeClass("alert-error").addClass("alert-info");
-            $("#divAlert" + timelapseId).slideDown();
-            $("#divAlert" + timelapseId + " span").html('<img src="assets/img/loader3.gif"/>&nbsp;Saving Twitter Response');
-            $('.table-striped td.start button.btn').click();
-            setTimeout(function () { checkFileUploadAndSave(timelapseId, camCode, o, $(".progress-success").attr("aria-valuemin")); }, 1000);
+        if ($(container_id + '.table-striped td.name').html() != undefined) {
+            $(container_id + ".fileupload-buttonbar").hide();
+            $(container_id + "#divAlert0").removeClass("alert-error").addClass("alert-info");
+            $(container_id + "#divAlert0").slideDown();
+            $(container_id + "#divAlert0 span").html('<img src="assets/img/loader3.gif"/>&nbsp;Saving Twitter Response');
+            $(container_id + '.table-striped td.start button.btn').click();
+            setTimeout(function () { checkFileUploadAndSave(container_id, camCode, o, $(container_id + ".progress-success").attr("aria-valuemin")); }, 1000);
         }
         else
-            checkFileUploadAndSave(timelapseId, camCode, o, null);
+            checkFileUploadAndSave(container_id, camCode, o, null);
     });
 
-    var fileuploadFinish = function(timelapseId, camCode, o, percentage) {
-        checkFileUploadAndSave(timelapseId, camCode, o, percentage);
+    var fileuploadFinish = function (container_id, camCode, o, percentage) {
+        checkFileUploadAndSave(container_id, camCode, o, percentage);
     };
 
-    var checkFileUploadAndSave = function(timelapseId, camCode, o, percentage) {
-        $("#divAlert" + timelapseId).removeClass("alert-error").addClass("alert-info");
-        $("#divAlert" + timelapseId).slideDown();
-        $("#divAlert" + timelapseId + " span").html('<img src="assets/img/loader3.gif"/>&nbsp;Saving timelapse');
+    var checkFileUploadAndSave = function (container_id, camCode, o, percentage) {
+        $(container_id + "#divAlert0").removeClass("alert-error").addClass("alert-info");
+        $(container_id + "#divAlert0").slideDown();
+        $(container_id + "#divAlert0 span").html('<img src="assets/img/loader3.gif"/>&nbsp;Saving timelapse');
 
         if (percentage != null && parseInt(percentage) <= 100) {
-            setTimeout(function() { fileuploadFinish(timelapseId, camCode, o, $(".progress-success").attr("aria-valuemin")); }, 1000);
+            setTimeout(function () { fileuploadFinish(container_id, camCode, o, $(container_id + ".progress-success").attr("aria-valuemin")); }, 1000);
             return;
         } else {
-            if ($('.table-striped td.preview a').length > 0)
-                $("#txtLogoFile").val($('.table-striped td.preview a').attr("href"));
-            else if ($("#txtLogoFile").val() == '')
-                $("#txtLogoFile").val('-');
+            if ($(container_id + '.table-striped td.preview a').length > 0)
+                $(container_id + "#txtLogoFile").val($(container_id + '.table-striped td.preview a').attr("href"));
+            else if ($(container_id + "#txtLogoFile").val() == '')
+                $(container_id + "#txtLogoFile").val('-');
         }
-        o.watermark_position = $("#ddlWatermarkPos" + timelapseId).val();
-        o.watermark_file = $("#txtLogoFile").val();
+        o.watermark_position = $(container_id + "#ddlWatermarkPos0").val();
+        o.watermark_file = $(container_id + "#txtLogoFile").val();
 
         $.ajax({
             type: ApiAction,
             url: timelapseApiUrl + camCode,
             data: o,
             dataType: 'json',
-            ContentType: apiContentType,//'application/json; charset=utf-8',
-            success: function(data) {
-                $("#divAlert" + timelapseId + " span").html('Timelapse saved.');
-                if ($("#txtCameraCode0").val() != "")
-                    $("#tab" + $("#txtCameraCode0").val()).remove();
-                $("#divTimelapses").prepend(getHtml(data));
-                getVideoPlayer(data.camera_id, data.code, data.mp4_url, data.jpg_url, data.id, data.watermark_file);
-                $("#newTimelapse").slideUp(500, function() { $("#newTimelapse").html(""); });
-                $("#lnNewTimelapse").show();
-                $("#lnNewTimelapseCol").hide();
-                if ($(".timelapseContainer").css("display") == "none")
-                    $(".timelapseContainer").fadeIn();
-                $("#divContainer" + data.id).slideDown(500);
-
+            ContentType: apiContentType,
+            success: function (data) {
+                $(container_id + "#divAlert0 span").html('Timelapse saved.');
+                if ($(container_id + "#txtTimelapseId").val() == "") {
+                    $("#divTimelapses").prepend(getHtml(data));
+                    getVideoPlayer(data.camera_id, data.code, data.mp4_url, data.jpg_url, data.id, data.watermark_file);
+                    $("#newTimelapse").slideUp(500, function () { $("#newTimelapse").html(""); });
+                    $("#lnNewTimelapse").show();
+                    $("#lnNewTimelapseCol").hide();
+                    if ($(".timelapseContainer").css("display") == "none")
+                        $(".timelapseContainer").fadeIn();
+                    $("#divContainer" + data.id).slideDown(500);
+                }
                 ApiAction = 'POST';
                 apiContentType = 'application/json; charset=utf-8';
                 setTimeout(function() {
-                    $("#divAlert" + timelapseId).slideUp();
+                    $(container_id + "#divAlert0").slideUp();
                 }, 6000);
             },
             error: function(xhr, textStatus) {
-                $("#divAlert" + timelapseId).removeClass("alert-info").addClass("alert-error");
-                $("#divAlert" + timelapseId + " span").html('Timelapse could not be saved.');
+                $(container_id + "#divAlert0").removeClass("alert-info").addClass("alert-error");
+                $(container_id + "#divAlert0 span").html('Timelapse could not be saved.');
             }
         });
     };
 
-    $(".cameraformButtonOk").live("click", function () {
-        var caneraSnaps;
-        $("#divAlert0").removeClass("alert-info").addClass("alert-error");
-        if ($("#txtCameraUniqueId").val() == "") {
-            $("#divAlert0").slideDown();
-            $("#divAlert0 span").html("Please enter unique camera ID.");
-            return;
-        }
-        if ($("#txtCameraName").val() == '') {
-            $("#divAlert0").slideDown();
-            $("#divAlert0 span").html("Please enter camera name.");
-            return;
-        }
-        if ($("#txtCameraHost").val() == "") {
-            $("#divAlert0").slideDown();
-            $("#divAlert0 span").html("Please enter camera host.");
-            return;
-        }
-        if ($("#txtCameraUsername").val() != "" && $("#txtCameraPassword").val() == "") {
-            $("#divAlert0").slideDown();
-            $("#divAlert0 span").html("Please enter camera Password.");
-            return;
-        }
-        if ($("#txtCameraUsername").val() == "" && $("#txtCameraPassword").val() != "") {
-            $("#divAlert0").slideDown();
-            $("#divAlert0 span").html("Please enter camera Username.");
-            return;
-        }
-        
-        var o = {
-            "id": $("#txtCameraUniqueId").val(),
-            "name": $("#txtCameraName").val(),
-            "is_public": $("#rdPublicCamera").is(":checked"),
-            "external_host": $("#txtCameraHost").val()
-        };
-
-        if ($("#txtCameraHttpPort").val() != "")
-            o.external_http_port = $("#txtCameraHttpPort").val();
-        if ($("#txtCameraRtspPort").val() != "")
-            o.external_rtsp_port = $("#txtCameraRtspPort").val();
-
-        if ($("#txtCameraUrl").val() != "") 
-            o.jpg_url = $("#txtCameraUrl").val();
-        if ($("#txtCameraUsername").val() != "" && $("#txtCameraPassword").val() != "") {
-            o.cam_username = $("#txtCameraUsername").val();
-            o.cam_password = $("#txtCameraPassword").val();
-        }
-
-        $("#divAlert0").removeClass("alert-error").addClass("alert-info");
-        $("#divAlert0").slideDown();
-        $("#divAlert0 span").html('<img src="assets/img/loader3.gif"/>&nbsp;Saving Camera');
-        $.ajax({
-            type: "POST",
-            url: EvercamApi + "/cameras.json",
-            crossDomain: true,
-            xhrFields: {
-                withCredentials: true
-            },
-            data: o,
-            dataType: 'json',
-            ContentType: "application/x-www-form-urlencoded",
-            success: function (data) {
-                $("#divAlert0 span").html('Camera saved.');
-                $("#txtCameraUniqueId").val('');
-                $("#txtCameraName").val('');
-                $("#txtCameraEndpoints").val('');
-                $("#txtCameraUrl").val('');
-                $("#txtCameraUsername").val('');
-                $("#txtCameraPassword").val('');
-                setTimeout(function () {
-                    $("#newTimelapse").slideUp(500, function () { $("#newTimelapse").html(""); });
-                    $("#divAlert0").slideUp();
-                }, 6000);
-            },
-            error: function (xhr, textStatus) {
-                $("#divAlert0").removeClass("alert-info").addClass("alert-error");
-                $("#divAlert0 span").html(xhr.responseJSON.message);
-            }
-        });
-    });
-
-    $(".cameraformButtonCancel").live("click", function () {
-        $("#newTimelapse").slideUp(500, function () {
-            $("#newTimelapse").html("");
-            $("#lnNewCamera").show();
-            $("#lnNewCameraCol").hide();
-        });
-    });
-
-    var validateDates = function(fromDate, toDate, timelapseId) {
+    var validateDates = function (fromDate, toDate, container_id) {
         var movieToStr = toDate.split("/");
         var movieFromStr = fromDate.split("/");
         var td = new Date(movieToStr[2], (movieToStr[1] - 1), movieToStr[0]);
@@ -501,20 +493,20 @@ var Index = function () {
         currentTime.setMinutes(0);
         currentTime.setSeconds(0);
         currentTime.setMilliseconds(0);
-
-        if ($("#txtTimelapseId").val() == "" && fd < currentTime) {
-            $("#divAlert" + timelapseId).slideDown();
-            $("#divAlert" + timelapseId + " span").html("From date cannot be less than current time.");
+        
+        if (fd > currentTime) {
+            $(container_id + "#divAlert0").slideDown();
+            $(container_id + "#divAlert0 span").html("From date cannot be greater than current time.");
             return false;
         }
         if (td < currentTime) {
-            $("#divAlert" + timelapseId).slideDown();
-            $("#divAlert" + timelapseId + " span").html("To date cannot be less than current time.");
+            $(container_id + "#divAlert0").slideDown();
+            $(container_id + "#divAlert0 span").html("To date cannot be less than current time.");
             return false;
         }
         if (td < fd) {
-            $("#divAlert" + timelapseId).slideDown();
-            $("#divAlert" + timelapseId + " span").html('To date cannot be less than from date.');
+            $(container_id + "#divAlert0").slideDown();
+            $(container_id + "#divAlert0 span").html('To date cannot be less than from date.');
             return false;
         }
         /*if (Date.parse(todate) == Date.parse(fromdate)) {
@@ -560,21 +552,11 @@ var Index = function () {
                     for (var i = 0; i < data.length; i++) {
                         var timelapse = data[i];
                         $("#divTimelapses").append(getHtml(timelapse));
+                        getEditTimelapseForm(timelapse.id);
                         getVideoPlayer(timelapse.camera_id, timelapse.code, timelapse.mp4_url, timelapse.jpg_url, timelapse.id, timelapse.watermark_file);
                     }
                     $(".timelapseContainer").fadeIn();
                     $("#divLoadingTimelapse").fadeOut();
-                    $('.timerange').timepicker({
-                        minuteStep: 1,
-                        showSeconds: false,
-                        showMeridian: false,
-                        defaultTime: false
-                    });
-                    handleFileupload();
-                    var dates = $(".daterange").datepicker({
-                        format: 'dd/mm/yyyy',
-                        minDate: new Date()
-                    });
                     $("pre").snippet("html", { style: "whitengrey", clipboard: "assets/scripts/ZeroClipboard.swf", showNum: false });
                 }
             },
@@ -656,19 +638,6 @@ var Index = function () {
                 cameraOptions += '<option value="' + cams.cameras[i].id + '" ' + selected + '>' + cams.cameras[i].name + '</option>';
             }
         }
-        cams = JSON.parse(localStorage.getItem("sharedcameras"));
-        if (cams != null && cams != undefined) {
-            for (var i = 0; i < cams.cameras.length; i++) {
-                var selected = '';
-                if (cams.cameras[i].id == data.camera_id) {
-                    timezone = cams.cameras[i].timezone;
-                    selected = 'selected';
-                    cameraOnline = cams.cameras[i].is_online;
-                }
-                cameraOptions += '<option value="' + cams.cameras[i].id + '" ' + selected + '>' + cams.cameras[i].name + '</option>';
-            }
-        }
-        
         var html = '    <div id="tab' + data.code + '">'; 
         html += '        <div class="header-bg">';
         html += '          <div class="row-fluid box-header-padding" data-val="' + data.id + '">';
@@ -692,7 +661,7 @@ var Index = function () {
         html += '                              <th class="tbl-hd2"><a class="tab-a block' + data.id + ' selected-tab" href="javascript:;" data-ref="#stats' + data.id + '" data-val="' + data.id + '">Stats</a></th>';
         html += '                              <th class="tbl-hd1"><a class="tab-a block' + data.id + '" href="javascript:;" data-ref="#embedcode' + data.id + '" data-val="' + data.id + '">Embed Code</a></th>';
         html += '                              <th class="tbl-hd2"><a class="tab-a block' + data.id + '" href="javascript:;" data-ref="#option' + data.id + '" data-val="' + data.id + '">Options</a></th>';
-        html += '                              <th class="tbl-hd3"><a class="tab-a2 block' + data.id + '" href="javascript:;" data-ref="#setting' + data.id + '" data-val="' + data.id + '">Settings&nbsp;&nbsp;<i class="icon-cog"></i></a></th>';
+        html += '                              <th class="tbl-hd3"><a class="tab-a block' + data.id + '" href="javascript:;" data-ref="#setting' + data.id + '" data-val="' + data.id + '">Settings&nbsp;&nbsp;<i class="icon-cog"></i></a></th>';
         html += '                          </tr>';
         html += '                       </thead>';
         html += '                       <tbody>';
@@ -725,6 +694,19 @@ var Index = function () {
         html += '                                           <div><ul class="list-style-none"><li style="width: 5%; float: left; padding-left: 3px;"><a href="javascript:;" class="commonLinks-icon" data-action="r" data-val="' + data.code + '"><img src="assets/img/delete.png" /></a></li><li style="width: 95%; float: left; padding: 2px 0px 0px 2px;">&nbsp;&nbsp;<a href="javascript:;" class="commonLinks-icon" data-action="r" data-val="' + data.code + '">Delete Timelapse</a></li></ul><div class="clearfix"></div></div>';
 	    html += '                                           <div style="padding-top:15px;padding-left: 3px;">If you require a downloadable mp4 file, please email <a href="mailto:vinnie@evercam.io;">vinnie@evercam.io</a></div>';
         html += '                                       </div></div>';
+
+        html += '                                       <input type="hidden" value="' + cameraName + '" id="camera-name' + data.id + '"/>';
+        html += '                                       <input type="hidden" value="' + data.camera_id + '" id="camera-code' + data.id + '"/>';
+        html += '                                       <input type="hidden" value="' + data.title + '" id="timelapse-title' + data.id + '"/>';
+        html += '                                       <input type="hidden" value="' + data.interval + '" id="timelapse-interval' + data.id + '"/>';
+        html += '                                       <input type="hidden" value="' + data.watermark_position + '" id="watermark-position' + data.id + '"/>';
+        html += '                                       <input type="hidden" value="' + data.watermark_file + '" id="watermark-file' + data.id + '"/>';
+        html += '                                       <input type="hidden" value="' + data.from_date + '" id="from-date' + data.id + '"/>';
+        html += '                                       <input type="hidden" value="' + data.to_date + '" id="to-date' + data.id + '"/>';
+        html += '                                       <input type="hidden" value="' + data.is_date_always + '" id="date-always' + data.id + '"/>';
+        html += '                                       <input type="hidden" value="' + data.is_time_always + '" id="time-always' + data.id + '"/>';
+        html += '                                       <input type="hidden" value="' + data.code + '" id="timelapse-code' + data.id + '"/>';
+        html += '                                       <div id="setting' + data.id + '" class="row-fluid hide"></div>';
 
         html += '                                   </td>';
         html += '                               </tr>';
@@ -825,72 +807,6 @@ var Index = function () {
         });
     });
 
-    $(".tab-a2").live("click", function () {
-        var clickedTab = $(this);
-        var id = clickedTab.attr("data-val");
-        $.ajax({
-            type: "GET",
-            url: timelapseApiUrl + "/" + id,
-            data: { },
-            contentType: "application/x-www-form-urlencoded; charset=UTF-8",
-            dataType: "json",
-            success: function (res) {
-                $.get('NewTimelapse.html', function (data) {
-                    $("#newTimelapse").html(data);
-                    $("#lnNewTimelapse").hide();
-                    $("#lnNewTimelapseCol").show();
-                    handleFileupload();
-                    getCameras(true, res.camera_id);
-                    
-                    $("#newTimelapse").slideDown(500);
-                    $("#txtTimelapseId").val(id);
-                    $("#txtTitle0").val(res.title);
-                    $("#ddlIntervals0").val(res.interval);
-                    $("#ddlFrameRate0").val(res.fps);
-                    $("#txtCameraCode0").val(res.code)
-                    $("#ddlFrameRate0").attr("disabled", "disabled");
-                    $("#ddlCameras0").attr("disabled", "disabled");
-                    $("#ddlWatermarkPos0").val(res.watermark_position);
-                    if (res.watermark_file != null && res.watermark_file != '') {
-                        $("#txtLogoFile").val(res.watermark_file);
-                        $("#imgWatermarkLogo").attr('src', res.watermark_file);
-                        $("#imgWatermarkLogo").show();
-                        $(".fileinput-button span").html("Change file...");
-                    }
-                    var fDt = new Date(res.from_date);
-                    var tDt = new Date(res.to_date);
-                    if (!res.is_time_always) {
-                        $("#chkTimeRange0").attr("checked", "checked");
-                        $("#divTimeRange0").slideDown();
-                        $("#txtFromTimeRange0").val(FormatNumTo2(fDt.getHours()) + ":" + FormatNumTo2(fDt.getMinutes()));
-                        $("#txtToTimeRange0").val(FormatNumTo2(tDt.getHours()) + ":" + FormatNumTo2(tDt.getMinutes()));
-                    }
-                    if (!res.is_date_always) {
-                        $("#chkDateRange0").attr("checked", "checked");
-                        $("#divDateRange0").slideDown();
-                        $("#txtFromDateRange0").val(FormatNumTo2(fDt.getDate()) + "/" + FormatNumTo2(fDt.getMonth() + 1) + "/" + fDt.getFullYear());
-                        $("#txtToDateRange0").val(FormatNumTo2(tDt.getDate()) + "/" + FormatNumTo2(tDt.getMonth() + 1) + "/" + tDt.getFullYear());
-                    }
-
-                    jQuery('html,body').animate({
-                        scrollTop: jQuery('body').offset().top
-                    }, 'slow');
-                    $('.timerange').timepicker({
-                        minuteStep: 1,
-                        showSeconds: false,
-                        showMeridian: false,
-                        defaultTime: false
-                    });
-                    var dates = $(".daterange").datepicker({
-                        format: 'dd/mm/yyyy',
-                        minDate: new Date()
-                    });
-                });
-            },
-            error: function (xhrc, ajaxOptionsc, thrownErrorc) { }
-        });
-    });
-
     $(".uploadWatermark").live("click", function () {
         $("#fulDialog").dialog({
             overlay: { backgroundColor: "white", opacity: 0 },
@@ -916,6 +832,16 @@ var Index = function () {
         });
         $(".ui-dialog-titlebar-close").hide();
     });
+
+    var handleFileupload1 = function (control_id) {
+
+        // Initialize the jQuery File Upload widget:
+        $(control_id + ' #fileupload').fileupload({
+            // Uncomment the following to send cross-domain cookies:
+            //xhrFields: {withCredentials: true},
+            url: 'assets/plugins/jquery-file-upload/server/php/'
+        });
+    };
 
     var handleFileupload = function() {
 
@@ -1001,11 +927,119 @@ var Index = function () {
         });
     };
 
+    var getEditTimelapseForm = function (id) {
+        var container_id = "#setting" + id;
+        $.get('NewTimelapse.html?' + Math.random(), function (data) {
+            $(container_id).html(data);
+            $(container_id + " div.span4").removeClass("span4").addClass("hide");
+            $(container_id + " div.span8").removeClass("span8").addClass("span12");
+            $(container_id + " div.main").removeClass("customize-nav").addClass("timelapse-content-box");
+            $(container_id + " button.formButtonOk").removeClass("formButtonOk").addClass("formButtonEdit");
+            $(container_id + " button.formButtonEdit").attr("data-val", id);
+            $(container_id + " button.formButtonCancel").remove();
+            $(container_id + " div.camera-select").hide()
+            handleFileupload1(container_id);
+            $(container_id + " #ddlCameras0").append('<option class="" data-val="" selected="selected" value="' + $("#camera-code" + id).val() + '" >' + $("#camera-name" + id).val() + '</option>');
+            $(container_id + " #txtTimelapseId").val(id);
+            $(container_id + " #txtTitle0").val($("#timelapse-title" + id).val());
+            $(container_id + " #ddlIntervals0").val($("#timelapse-interval" + id).val());
+            $(container_id + " #ddlFrameRate0").val(1);
+            $(container_id + " #txtCameraCode0").val($("#timelapse-code" + id).val())
+            $(container_id + " #ddlWatermarkPos0").val($("#watermark-position" + id).val());
+            var watermark_file = $("#watermark-file" + id).val()
+            if (watermark_file != null && watermark_file != '') {
+                $(container_id + " #txtLogoFile").val(watermark_file);
+                $(container_id + " #imgWatermarkLogo").attr('src', watermark_file);
+                $(container_id + " #imgWatermarkLogo").show();
+                $(container_id + " .fileinput-button span").html("Change file...");
+            }
+            var fDt = new Date($("#from-date" + id).val());
+            var tDt = new Date($("#to-date" + id).val());
+            if ($("#time-always" + id).val() == "false") {
+                $(container_id + " #chkTimeRange0").attr("checked", "checked");
+                $(container_id + " #divTimeRange0").slideDown();
+                $(container_id + " #txtFromTimeRange0").val(FormatNumTo2(fDt.getHours()) + ":" + FormatNumTo2(fDt.getMinutes()));
+                $(container_id + " #txtToTimeRange0").val(FormatNumTo2(tDt.getHours()) + ":" + FormatNumTo2(tDt.getMinutes()));
+            }
+            if ($("#date-always" + id).val() == "false") {
+                $(container_id + " #chkDateRange0").attr("checked", "checked");
+                $(container_id + " #divDateRange0").slideDown();
+                $(container_id + " #txtFromDateRange0").val(FormatNumTo2(fDt.getDate()) + "/" + FormatNumTo2(fDt.getMonth() + 1) + "/" + fDt.getFullYear());
+                $(container_id + " #txtToDateRange0").val(FormatNumTo2(tDt.getDate()) + "/" + FormatNumTo2(tDt.getMonth() + 1) + "/" + tDt.getFullYear());
+            }
+
+            $('.timerange').timepicker({
+                minuteStep: 1,
+                showSeconds: false,
+                showMeridian: false,
+                defaultTime: false
+            });
+            var dates = $(".daterange").datepicker({
+                format: 'dd/mm/yyyy',
+                minDate: new Date()
+            });
+        });
+    }
+
     $(".tab-a").live("click", function () {
         var clickedTab = $(this);
-        if (clickedTab.html() == 'Settings')
-            return;
         var id = clickedTab.attr("data-val");
+        if (clickedTab.html().indexOf('Settings') >= 0) {
+            var container_id = "#setting" + id;
+            if ($(container_id).html() == "") {
+                $.get('NewTimelapse.html?' + Math.random(), function (data) {
+                    $(container_id).html(data);
+                    $(container_id + " div.span4").removeClass("span4").addClass("hide");
+                    $(container_id + " div.span8").removeClass("span8").addClass("span12");
+                    $(container_id + " div.main").removeClass("customize-nav").addClass("timelapse-content-box");
+                    $(container_id + " button.formButtonOk").removeClass("formButtonOk").addClass("formButtonEdit");
+                    $(container_id + " button.formButtonEdit").attr("data-val", id);
+                    $(container_id + " button.formButtonCancel").remove();
+                    $(container_id + " div.camera-select").hide()
+                    handleFileupload1(container_id);
+                    $("#ddlCameras0").append('<option class="" data-val="" selected="selected" value="' + $("#camera-code" + id).val() + '" >' + $("#camera-name" + id).val() + '</option>');
+                    $(container_id + " #txtTimelapseId").val(id);
+                    $(container_id + " #txtTitle0").val($("#timelapse-title" + id).val());
+                    $(container_id + " #ddlIntervals0").val($("#timelapse-interval" + id).val());
+                    $(container_id + " #ddlFrameRate0").val(1);
+                    $(container_id + " #txtCameraCode0").val($("#timelapse-code" + id).val())
+                    $(container_id + " #ddlWatermarkPos0").val($("#watermark-position" + id).val());
+                    var watermark_file = $("#watermark-file" + id).val()
+                    if (watermark_file != null && watermark_file != '') {
+                        $(container_id + " #txtLogoFile").val(watermark_file);
+                        $(container_id + " #imgWatermarkLogo").attr('src', watermark_file);
+                        $(container_id + " #imgWatermarkLogo").show();
+                        $(container_id + " .fileinput-button span").html("Change file...");
+                    }
+                    var fDt = new Date($("#from-date" + id).val());
+                    var tDt = new Date($("#to-date" + id).val());
+                    if ($("#time-always" + id).val() == "false") {
+                        $(container_id + " #chkTimeRange0").attr("checked", "checked");
+                        $(container_id + " #divTimeRange0").slideDown();
+                        $(container_id + " #txtFromTimeRange0").val(FormatNumTo2(fDt.getHours()) + ":" + FormatNumTo2(fDt.getMinutes()));
+                        $(container_id + " #txtToTimeRange0").val(FormatNumTo2(tDt.getHours()) + ":" + FormatNumTo2(tDt.getMinutes()));
+                    }
+                    if ($("#date-always" + id).val() == "false") {
+                        $(container_id + " #chkDateRange0").attr("checked", "checked");
+                        $(container_id + " #divDateRange0").slideDown();
+                        $(container_id + " #txtFromDateRange0").val(FormatNumTo2(fDt.getDate()) + "/" + FormatNumTo2(fDt.getMonth() + 1) + "/" + fDt.getFullYear());
+                        $(container_id + " #txtToDateRange0").val(FormatNumTo2(tDt.getDate()) + "/" + FormatNumTo2(tDt.getMonth() + 1) + "/" + tDt.getFullYear());
+                    }
+
+                    $('.timerange').timepicker({
+                        minuteStep: 1,
+                        showSeconds: false,
+                        showMeridian: false,
+                        defaultTime: false
+                    });
+                    var dates = $(".daterange").datepicker({
+                        format: 'dd/mm/yyyy',
+                        minDate: new Date()
+                    });
+                });
+            }
+        }
+
         $(".block" + id).removeClass("selected-tab");
         clickedTab.addClass("selected-tab");
 
@@ -1126,9 +1160,10 @@ var Index = function () {
         $("#tab" + code).fadeOut(1000, function() {
             $.ajax({
                 type: "DELETE",
-                url: timelapseApiUrl + "/" + code + "/users/" + user.username,
-                contentType: "application/x-www-form-urlencoded",
+                url: timelapseApiUrl + "/" + code + "/users/" + user.id,
+                data: { },
                 dataType: "json",
+                contentType: "application/x-www-form-urlencoded; charset=UTF-8",
                 success: function(res) {
                     $("#tab" + code).remove();
                     if ($("#divTimelapses").html() == "") {

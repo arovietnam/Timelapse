@@ -5,19 +5,30 @@ var Login = function () {
     var EvercamApi = "https://api.evercam.io/v1";
         
     var onBodyLoad = function () {
-        if (localStorage.getItem("api_id") != null && localStorage.getItem("api_id") != undefined &&
-            localStorage.getItem("api_key") != null && localStorage.getItem("api_key") != undefined)
-            window.location = 'index.html';
-        $("#country").select2({
-            placeholder: '<i class="icon-map-marker"></i>&nbsp;Select a Country',
-            allowClear: true,
-            formatResult: format,
-            formatSelection: format,
-            escapeMarkup: function (m) {
-                return m;
-            }
-        });
+        if (getQueryStringByName("api_id") != null && getQueryStringByName("api_key") != null && getQueryStringByName("id") != null)
+            get_user(getQueryStringByName("id"), getQueryStringByName("api_id"), getQueryStringByName("api_key"));
+        else {
+            if (localStorage.getItem("api_id") != null && localStorage.getItem("api_id") != undefined &&
+                localStorage.getItem("api_key") != null && localStorage.getItem("api_key") != undefined)
+                window.location = 'index.html';
+            $("#country").select2({
+                placeholder: '<i class="icon-map-marker"></i>&nbsp;Select a Country',
+                allowClear: true,
+                formatResult: format,
+                formatSelection: format,
+                escapeMarkup: function (m) {
+                    return m;
+                }
+            });
+        }
     }
+
+    var getQueryStringByName = function (name) {
+        name = name.replace(/[\[]/, "\\\[").replace(/[\]]/, "\\\]");
+        var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
+            results = regex.exec(location.search);
+        return results == null ? null : decodeURIComponent(results[1].replace(/\+/g, " "));
+    };
 
     var format = function (state) {
         if (!state.id) return state.text; // optgroup

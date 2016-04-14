@@ -274,8 +274,8 @@ namespace TimelapseApi.Models
                 model.duration = timelapse.Duration;
                 model.resolution = timelapse.Resolution;
                 model.privacy = timelapse.Privacy;
-                model.from_date = Utils.ConvertFromUtc(timelapse.FromDT, timelapse.TimeZone).ToString();
-                model.to_date = Utils.ConvertFromUtc(timelapse.ToDT, timelapse.TimeZone).ToString();
+                model.from_date = Utils.ConvertFromUtc(timelapse.FromDT, timelapse.TimeZone).ToString("MM/dd/yyyy HH:mm:ss");
+                model.to_date = Utils.ConvertFromUtc(timelapse.ToDT, timelapse.TimeZone).ToString("MM/dd/yyyy HH:mm:ss");
                 model.is_date_always = timelapse.DateAlways;
                 model.is_time_always = timelapse.TimeAlways;
                 model.enable_md = timelapse.EnableMD;
