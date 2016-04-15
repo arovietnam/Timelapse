@@ -526,6 +526,35 @@ namespace BLL.Dao
             { Connection.CloseConnection(); }
         }
 
+        public static bool UpdateReCreateHlsParams(string code, bool reCreateHls, bool startRecreateHls)
+        {
+            string query = @"UPDATE [dbo].[Timelapses] " +
+                           "SET [RecreateHls]=@reCreateHls, [StartRecreateHls]=@startRecreateHls " +
+                           "WHERE (Code = '" + code + "')";
+            try
+            {
+                var p1 = new SqlParameter("@reCreateHls", reCreateHls);
+                var p2 = new SqlParameter("@startRecreateHls", startRecreateHls);
+
+                var cmd = new SqlCommand { CommandText = query, CommandType = CommandType.Text };
+                cmd.Parameters.Add(p1);
+                cmd.Parameters.Add(p2);
+                Connection.OpenConnection();
+                cmd.Connection = Connection.DbConnection;
+                bool result = (cmd.ExecuteNonQuery() > 0);
+                Connection.CloseConnection();
+                cmd.Dispose();
+                return result;
+            }
+            catch (Exception ex)
+            {
+                Utils.FileLog("TimelapseDao UpdateReCreateHlsParams(string code, bool reCreateHls, bool startRecreateHls) " + ex.Message);
+                return false;
+            }
+            finally
+            { Connection.CloseConnection(); }
+        }
+
         public static bool UpdateStatus(string code, TimelapseStatus status, string tag, string timezone)
         {
             string query = @"UPDATE [dbo].[Timelapses] " +
@@ -888,6 +917,10 @@ namespace BLL.Dao
                     timelapse.ModifiedDT = dr.GetDateTime(dr.GetOrdinal("ModifiedDT"));
                 if (!dr.IsDBNull(dr.GetOrdinal("CreatedDT")))
                     timelapse.CreatedDT = dr.GetDateTime(dr.GetOrdinal("CreatedDT"));
+                if (!dr.IsDBNull(dr.GetOrdinal("RecreateHls")))
+                    timelapse.RecreateHls = dr.GetBoolean(dr.GetOrdinal("RecreateHls"));
+                if (!dr.IsDBNull(dr.GetOrdinal("StartRecreateHls")))
+                    timelapse.StartRecreateHls = dr.GetBoolean(dr.GetOrdinal("StartRecreateHls"));
 
                 timelapses.Add(timelapse);
             }

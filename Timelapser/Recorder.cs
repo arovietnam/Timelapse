@@ -82,6 +82,11 @@ namespace Timelapser
                         Utils.TimelapseLog(timelapse, "EXIT: Timelapse.ID == 0");
                         ExitProcess();
                     }
+                    if (timelapse.RecreateHls)
+                    {
+                        Utils.TimelapseLog(timelapse, "EXIT: Because user request recreate HLS. Timelapse.ID == " + timelapse.ID);
+                        ExitProcess();
+                    }
                     if (timelapse.Status == (int)TimelapseStatus.Stopped && !timelapse.IsRecording)
                     {
                         Utils.TimelapseLog(timelapse, "EXIT: Timelapse.Status == Stopped");
@@ -371,7 +376,6 @@ namespace Timelapser
         public void CreateVideoChunks(string bashFile, bool update_info = true)
         {
             Utils.TimelapseLog(timelapse, ">>> CreateVideoChunks(" + bashFile + ")");
-            string[] maxres = MAX_RES.Split(new char[] { ',' });
             RunBash(bashFile);
             if (update_info)
             {

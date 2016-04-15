@@ -329,6 +329,24 @@ namespace TimelapseApi.Controllers
         }
 
         /// <summary>
+        /// Update timelapse recreate hls
+        /// </summary>
+        /// <param name="code">Timelapse Code</param>
+        /// <param name="id">Timelapse Owner's Evercam Id</param>
+        /// <returns>Returns updated timelapse details in case of success or HTTP error 400/BadRequest</returns>
+        [Route("v1/timelapses/{code}/recreate/users/{id}")]
+        [HttpPost]
+        public HttpResponseMessage Recreate(string code, string id)
+        {
+            Timelapse t = TimelapseDao.Get(code);
+            if (t.UserId != id)
+                throw new HttpResponseException(HttpStatusCode.Forbidden);
+            if (!TimelapseDao.UpdateReCreateHlsParams(code, true, false))
+                throw new HttpResponseException(HttpStatusCode.BadRequest);
+            return Common.Utility.GetResponseMessage("Request saved.", HttpStatusCode.OK);
+        }
+
+        /// <summary>
         /// Update timelapse snapshots count only
         /// </summary>
         /// <param name="code">Timelapse Code</param>

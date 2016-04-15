@@ -76,6 +76,21 @@ namespace TimelapseAppService
                         }
                         
                         int pid = Utils.TimelapseRunning(timelapse.ID);
+                        if (timelapse.RecreateHls && !timelapse.StartRecreateHls)
+                        {
+                            if (pid == 0)
+                                Utils.KillProcess(pid, timelapse.ID);
+                            StartTimelapser(timelapse);
+                            TimelapseDao.UpdateReCreateHlsParams(timelapse.Code, true, true);
+                            Utils.FileLog("Timelapse Started For Recreate HLS: " + timelapse.ID);
+                            continue;
+                        }
+                        else if (timelapse.RecreateHls && timelapse.StartRecreateHls)
+                        {
+                            Utils.FileLog("Timelapse Started For Recreate HLS: " + timelapse.ID);
+                            continue;
+                        }
+
                         if (timelapse.Status == (int)TimelapseStatus.Paused)
                         {
                             if (pid > 0)
@@ -133,7 +148,7 @@ namespace TimelapseAppService
                 Camera camera = evercam.GetCamera(timelapse.CameraId);
 
                 // if camera found then start its process
-                if (camera.IsOnline || !isCreatedHls(timelapse.ID, camera.ID))
+                if (camera.IsOnline || !isCreatedHls(timelapse.ID, camera.ID) || timelapse.RecreateHls)
                 {
                     ProcessStartInfo process = new ProcessStartInfo(TimelapserExePath, timelapse.ID.ToString());
                     process.UseShellExecute = true;

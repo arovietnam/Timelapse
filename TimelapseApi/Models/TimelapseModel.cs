@@ -66,6 +66,10 @@ namespace TimelapseApi.Models
         public string poster { get; set; }
         /// <example>1a2b3c4d5e6f7a8b9c0d</example>
         public string access_token { get; set; }
+        /// <example>True / False for re-create stream</example>
+        public bool recreate_hls { get; set; }
+        /// <example>True / False is start re-creation stream</example>
+        public bool start_recreate_hls { get; set; }
 
         public static Timelapse Convert(TimelapseInfoModel model, string evercamId)
         {
@@ -247,6 +251,8 @@ namespace TimelapseApi.Models
             model.watermark_file = timelapse.WatermarkImage;
             model.watermark_position = (int)timelapse.WatermarkPosition;
             model.access_token = timelapse.OauthToken;
+            model.recreate_hls = timelapse.RecreateHls;
+            model.start_recreate_hls = timelapse.StartRecreateHls;
 
             return model;
         }
@@ -291,6 +297,8 @@ namespace TimelapseApi.Models
                 model.watermark_file = timelapse.WatermarkImage;
                 model.watermark_position = (int)timelapse.WatermarkPosition;
                 model.access_token = timelapse.OauthToken;
+                model.recreate_hls = timelapse.RecreateHls;
+                model.start_recreate_hls = timelapse.StartRecreateHls;
 
                 list.Add(model);
             }
@@ -334,6 +342,8 @@ namespace TimelapseApi.Models
             model.watermark_file = timelapse.WatermarkImage;
             model.watermark_position = (int)timelapse.WatermarkPosition;
             model.access_token = timelapse.OauthToken;
+            model.recreate_hls = timelapse.RecreateHls;
+            model.start_recreate_hls = timelapse.StartRecreateHls;
 
             return model;
         }
