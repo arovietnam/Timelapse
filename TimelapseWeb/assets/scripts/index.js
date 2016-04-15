@@ -156,21 +156,27 @@ var Index = function () {
     $('[name="TimeRange"]').live("click", function () {
         var id = $(this).attr("id");
         var dataval = $(this).attr("data-val");
-        if (id == "chkTimeRange" + dataval) {
-            $("#divTimeRange" + dataval).slideDown();
+        var container_id = "#setting" + dataval;
+        if (parseInt(dataval) == 0)
+          container_id = "#newTimelapse";
+        if (id == "chkTimeRange0") {
+            $(container_id + " #divTimeRange0").slideDown();
         }
         else
-            $("#divTimeRange" + dataval).slideUp();
+            $(container_id + " #divTimeRange0").slideUp();
     });
 
     $('[name="DateRange"]').live("click", function () {
         var id = $(this).attr("id");
         var dataval = $(this).attr("data-val");
-        if (id == "chkDateRange" + dataval) {
-            $("#divDateRange" + dataval).slideDown();
+        var container_id = "#setting" + dataval;
+        if (parseInt(dataval) == 0)
+          container_id = "#newTimelapse";
+        if (id == "chkDateRange0") {
+            $(container_id + " #divDateRange0").slideDown();
         }
         else
-            $("#divDateRange" + dataval).slideUp();
+            $(container_id + " #divDateRange0").slideUp();
     });
 
     var handleMyTimelapse = function() {
@@ -647,29 +653,30 @@ var Index = function () {
         html += '               </div>';
         html += '          </div>';
         html += '          <div id="divContainer' + data.id + '" class="row-fluid box-content-padding hide">';
-        html += '              <div id="divVideoContainer' + data.id + '" class="span6">';
-        //call videojs
-        html += '                  <video data-setup="{}" preload="none" controls="" class="video-js vjs-default-skin video-bg-width" id="vde4b3u05e9y">';
-        html += '                   <source type="video/mp4" src="' + data.mp4_url + '"></source>';
-        html += '                  </video>';
-
-        html += '              </div>';
-        html += '              <div class="span6">';
+        html += '              <div class="span12">';
         html += '                  <table class="tbl-tab" cellpadding="0" cellspacing="0">';
         html += '                      <thead>';
-        html += '                          <tr>';
-        html += '                              <th class="tbl-hd2"><a class="tab-a block' + data.id + ' selected-tab" href="javascript:;" data-ref="#stats' + data.id + '" data-val="' + data.id + '">Stats</a></th>';
-        html += '                              <th class="tbl-hd1"><a class="tab-a block' + data.id + '" href="javascript:;" data-ref="#embedcode' + data.id + '" data-val="' + data.id + '">Embed Code</a></th>';
+        html += '                          <tr class="span12">';
+        html += '                              <th class="tbl-hd2"><a class="tab-a block' + data.id + ' selected-tab" href="javascript:;" data-ref="#divVideoContainer' + data.id + '" data-val="' + data.id + '">View Video</a></th>';
+        html += '                              <th class="tbl-hd2"><a class="tab-a block' + data.id + '" href="javascript:;" data-ref="#stats' + data.id + '" data-val="' + data.id + '">Stats</a></th>';
+        html += '                              <th class="tbl-hd2"><a class="tab-a block' + data.id + '" href="javascript:;" data-ref="#embedcode' + data.id + '" data-val="' + data.id + '">Embed Code</a></th>';
         html += '                              <th class="tbl-hd2"><a class="tab-a block' + data.id + '" href="javascript:;" data-ref="#option' + data.id + '" data-val="' + data.id + '">Options</a></th>';
-        html += '                              <th class="tbl-hd3"><a class="tab-a block' + data.id + '" href="javascript:;" data-ref="#setting' + data.id + '" data-val="' + data.id + '">Settings&nbsp;&nbsp;<i class="icon-cog"></i></a></th>';
+        html += '                              <th class="tbl-hd2"><a class="tab-a block' + data.id + '" href="javascript:;" data-ref="#setting' + data.id + '" data-val="' + data.id + '">Settings&nbsp;&nbsp;<i class="icon-cog"></i></a></th>';
         html += '                          </tr>';
         html += '                       </thead>';
         html += '                       <tbody>';
-        html += '                           <tr><td colspan="4" height="10px"></td></tr>';
+        html += '                           <tr><td colspan="12" height="10px"></td></tr>';
         html += '                               <tr>';
-        html += '                                   <td id="cameraCode' + data.id + '" colspan="4">';
+        
+        html += '                                   <td id="cameraCode' + data.id + '" colspan="12">';
+        html += '                                       <div id="divVideoContainer' + data.id + '" class="row-fluid active">';
+        //call videojs
+        html += '                                         <video data-setup="{}" preload="none" controls="" class="video-js vjs-default-skin video-bg-width" id="vde4b3u05e9y">';
+        html += '                                         <source type="video/mp4" src="' + data.mp4_url + '"></source>';
+        html += '                                         </video>';
 
-        html += '                                       <div id="stats' + data.id + '" class="row-fluid active">';
+        html += '                                       </div>';
+        html += '                                       <div id="stats' + data.id + '" class="row-fluid hide">';
         html += '                                         <div class="timelapse-content-box">';
         html += '                                           <table class="table table-full-width" style="margin-bottom:0px;">';
         html += '                                           <tr><td class="span2">Total Snapshots: </td><td class="span2" id="tdSnapCount' + data.code + '">' + data.snaps_count + '</td><td style="width:25px;text-align:right;" align="right"><img id="imgRef' + data.id + '" style="cursor:pointer;height:27px;" data-val="' + data.code + '" class="refreshStats" src="assets/img/refres-tile.png" alt="Refresh Stats" title="Refresh Stats"></td></tr>';
@@ -941,6 +948,12 @@ var Index = function () {
             handleFileupload1(container_id);
             $(container_id + " #ddlCameras0").append('<option class="" data-val="" selected="selected" value="' + $("#camera-code" + id).val() + '" >' + $("#camera-name" + id).val() + '</option>');
             $(container_id + " #txtTimelapseId").val(id);
+            $(container_id + " #chkDateRangeAlways0").attr("data-val", id);
+            $(container_id + " #chkDateRange0").attr("data-val", id);
+            
+            $(container_id + " #chkTimeRangeAlways0").attr("data-val", id);
+            $(container_id + " #chkTimeRange0").attr("data-val", id);
+
             $(container_id + " #txtTitle0").val($("#timelapse-title" + id).val());
             $(container_id + " #ddlIntervals0").val($("#timelapse-interval" + id).val());
             $(container_id + " #ddlFrameRate0").val(1);

@@ -454,8 +454,8 @@ margin-bottom:35px;
         color:#2c3e50;
         
     }
-    .tbl-hd2{width: 24%; text-align: left; padding-bottom: 5px;}
-    .tbl-hd3{width: 24%; text-align: right; padding-bottom: 5px;}
+    .tbl-hd2{text-align: left; padding-bottom: 5px; padding-right: 30px; }
+    .tbl-hd3{text-align: right; padding-bottom: 5px;}
     .footer-heading{font-size:30px;text-align:center;color:#666666;}
     .footer-paragraph{font-size:20px;text-align:center;color:#666666;padding-bottom:30px;line-height:30px;}
     .timelapse-paused{background:url('../img/paused-lbl.png') top right no-repeat;height:20px;}
@@ -480,9 +480,8 @@ margin-bottom:35px;
         float: left;
         padding-top: 5px;
         text-align: left;
-        width: 110px;
     }
-    .form-control{margin-left:130px;}
+    .form-control{width:65%; float: left;}
   }
 
 @media (max-width: 767px) 
@@ -634,4 +633,14 @@ body {
 
 .margin-bottom-60 {
   margin-bottom: 60px;
+}
+
+.span-setting {
+  width: 35% !important;
+  float: left;
+}
+
+.control-group {
+  margin-bottom: 0px !important;
+  padding: 8px;
 }
