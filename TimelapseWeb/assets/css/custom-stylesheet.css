@@ -1,3 +1,6 @@
+html {
+  height: 100%;
+}
 .red {
     color: #ff0000;
 }
@@ -614,4 +617,21 @@ html.sessions body .column.thin {
   color: #b94a48;
   background-color: #f2dede;
   border-color: #eed3d7;
+}
+
+.footer {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  right: 0;
+}
+
+body {
+  position: relative;
+  margin: 0;
+  min-height: 100%;
+}
+
+.margin-bottom-60 {
+  margin-bottom: 60px;
 }
