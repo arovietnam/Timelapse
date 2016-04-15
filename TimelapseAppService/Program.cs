@@ -19,17 +19,17 @@ namespace TimelapseAppService
         {
             AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
 
-//#if(!DEBUG)
+            //#if(!DEBUG)
             ServiceBase[] ServicesToRun;
             ServicesToRun = new ServiceBase[] 
                 { 
                     new Service1()
                 };
             ServiceBase.Run(ServicesToRun);
-//#else
+            //#else
             //Service1 myServ = new Service1();
             //myServ.Start();
-//#endif
+            //#endif
         }
 
         private static void CurrentDomain_UnhandledException(Object sender, UnhandledExceptionEventArgs e)

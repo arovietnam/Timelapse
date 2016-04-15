@@ -129,8 +129,19 @@ namespace Timelapser
                 CreateBashFile(timelapse.FPS, DownPath, TsPath, chunkSize, timelapse.SnapsInterval);
                 
                 Recorder recorder = new Recorder(timelapse);
-
                 string bashFile = Path.Combine(Program.UpPath, "build.sh");
+
+                if (timelapse.RecreateHls)
+                {
+                    string old_ts_path = Path.Combine(FilePath, cleanCameraId, timelapse.ID.ToString(), "ts_old");
+                    Directory.Move(TsPath, old_ts_path);
+                    if (!Directory.Exists(TsPath))
+                        Directory.CreateDirectory(TsPath);
+                    recorder.CreateVideoChunks(bashFile);
+                    TimelapseDao.UpdateReCreateHlsParams(timelapse.Code, false, false);
+                    Utils.TimelapseLog(timelapse, "Program <<< Recreate HLS stream");
+                }
+
                 DirectoryInfo imagesDirectory = new DirectoryInfo(Program.DownPath);
                 int imagesCount = imagesDirectory.GetFiles("*.jpg").Length;
                 DirectoryInfo ts = new DirectoryInfo(TsPath);
