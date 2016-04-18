@@ -111,13 +111,7 @@ var Login = function () {
 
                     $(".font-size16").removeClass("font-color-red");
                     $('.alert-error').slideUp();
-                    $('#LoaderRegister').css({
-                        position: 'absolute',
-                        top: ($('#divRegister').height() / 2) - 22,
-                        'z-index': '5',
-                        left: ($('#divRegister').width() / 2) - 22,
-                    });
-                    $('#LoaderRegister').show();
+                    NProgress.start();
 
                     $.ajax({
                         type: 'POST',
@@ -144,7 +138,7 @@ var Login = function () {
                             //    msg += '<li>' + xhr.responseJSON.message[i] + '</li>';
                             $('.alert-error').slideDown();
                             $('.alert-error span').html(xhr.responseJSON.message + ' ' + xhr.responseJSON.context);
-                            $('#LoaderRegister').hide();
+                            NProgress.done();
                         }
                     });
                 }
@@ -168,18 +162,13 @@ var Login = function () {
     }
 
     var login = function () {
-        $('#Loaderlogin').css({
-            position: 'absolute',
-            top: ($('#evercam-login').height() / 2),
-            'z-index': '5',
-            left: ($('#evercam-login').width() / 2),
-        });
-        $('#Loaderlogin').show();
+      // Show the progress bar 
+        NProgress.start();
         var username = $("#txtUsername").val();
         var password = $("#txtPassword").val();
         if (username == "" || password == "") {
             alert_notification(".bb-alert", "Invalid login/password combination");
-            $('#Loaderlogin').hide();
+            NProgress.done();
             return;
         }
         $.ajax({
@@ -194,7 +183,7 @@ var Login = function () {
             },
             error: function (xhr, textStatus) {
                 alert_notification(".bb-alert", xhr.responseJSON.message);
-                $('#Loaderlogin').hide();
+                NProgress.done();
             }
         });
     }
@@ -215,7 +204,7 @@ var Login = function () {
             },
             error: function (xhr, textStatus) {
                 alert_notification(".bb-alert", xhr.responseJSON.message);
-                $('#Loaderlogin').hide();
+                NProgress.done();
             }
         });
     }
@@ -244,5 +233,4 @@ var Login = function () {
         }
 
     };
-
 }();

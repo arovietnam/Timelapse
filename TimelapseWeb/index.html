@@ -53,10 +53,11 @@
                                <div class="navbar">
                                    <div class="navbar-inner">
                                        <img class="logo-t showlist iconcursor" src="assets/img/logo-t.png" id="logoimg" alt="">
+                                       <button id="lnkLogout" class="btn btn-sign-out" data-toggle="tooltip" title="Sign out" style="display: none;"><i class="icon-signout"></i></button>
                                        <div class="nav-collapse collapse">
                                            <ul class="nav" id="topnavigation">
                                                <li id="liUsername" class="hide"><div class="user-name showlist iconcursor" id="displayUsername"></div></li>
-                                               <li id="lnkSignout" class="hide"><a id="lnkLogout" href="javascript:;"><img src="assets/img/sign-out.png"/></a></li>
+                                               <li id="lnkSignout" ><a id="lnkLogout" href="javascript:;"><img src="assets/img/sign-out.png"/></a></li>
                                            </ul>
                                        </div>
                                    </div>
@@ -76,7 +77,7 @@
                                            <a id="lnNewCamera" class="hide" href="javascript:;"><img src="assets/img/new-camera.png" /></a>
                                            <a id="lnNewCameraCol" href="javascript:;" class="hide"><img src="assets/img/new-camera-col.png" /></a>
                                        </div>
-                                       <div class="span1 text-right margin-left0 margin-top-10">
+                                       <div class="span1 hide-767 text-right margin-left0 margin-top-10">
                                            <a id="lnExpandTimelapses" href="javascript:;"><img src="assets/img/expand-all.png" alt="Expand All Timelapses" title="Expand All Timelapses" /></a>
                                            <a id="lnCollapseTimelapses" href="javascript:;" class="hide"><img src="assets/img/collapse-all.png" alt="Collapse All Timelapses" title="Collapse All Timelapses" /></a>
                                        </div>
@@ -126,6 +127,14 @@
                            </div>
                        </div>
                        <!-- END COPYRIGHT -->
+                       <!-- nprogress bar -->
+                      <script src='assets/scripts/nprogress.js'></script>
+                      <link rel='stylesheet' href='assets/css/nprogress.css'/>
+                      <script type="text/javascript">
+                        NProgress.start();
+                        NProgress.done();
+                      </script> 
+                      <!-- end nprogress bar -->
                        <!-- BEGIN JAVASCRIPTS(Load javascripts at bottom, this will reduce page load time) -->
                        <!-- BEGIN CORE PLUGINS -->
                        <script src="assets/plugins/jquery-1.10.1.min.js" type="text/javascript"></script>
