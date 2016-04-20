@@ -139,6 +139,7 @@ namespace Timelapser
                         Directory.CreateDirectory(TsPath);
                     recorder.CreateVideoChunks(bashFile);
                     TimelapseDao.UpdateReCreateHlsParams(timelapse.Code, false, false);
+                    Directory.Delete(old_ts_path, true);
                     Utils.TimelapseLog(timelapse, "Program <<< Recreate HLS stream");
                 }
 

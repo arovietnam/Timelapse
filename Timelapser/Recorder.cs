@@ -113,9 +113,9 @@ namespace Timelapser
                         ExitProcess();
                     }
                     Utils.TimelapseLog(timelapse, "Timelapser Initialized @ " + Utils.ConvertFromUtc(DateTime.UtcNow, timelapse.TimeZone) + " (" + timelapse.FromDT + "-" + timelapse.ToDT + ")");
+                    string imageFile = DownloadSnapshot();
                     int imagesCount = imagesDirectory.GetFiles("*.jpg").Length;
                     index = imagesCount;
-                    string imageFile = DownloadSnapshot();
                     // timelapse recorder is just initializing
                     if (!Program.Initialized)
                     {
@@ -244,7 +244,7 @@ namespace Timelapser
         {
             if (fileCount > snapshotCount)
             {
-                if (interval == 1 && (fileCount - snapshotCount) >= ((24 * Program.chunkSize) - 1))
+                if (interval == 1 && (fileCount - snapshotCount) >= 24)
                     return true;
                 else if (intervals.Contains(interval) && (fileCount - snapshotCount) >= 24)
                     return true;
@@ -284,8 +284,8 @@ namespace Timelapser
                 // instead of trying for X times, just try once other wise fetch from recording
                 // store and returns live snapshot on evercam
                 var snap1 = Program.Evercam.CreateSnapshot(timelapse.CameraId, Settings.EvercamClientName, true);
-                data = EvercamV2.Utility.ToBytes(snap1.Data);
-                Utils.TimelapseLog(timelapse, "Image data retrieved from Camera");
+                Utils.TimelapseLog(timelapse, "Image data retrieved from Camera: " + snap1.Data);
+                data = System.Convert.FromBase64String(snap1.Data.Replace("data:image/jpeg;base64,", ""));
             }
             catch (Exception x)
             {
