@@ -85,6 +85,14 @@ var Index = function () {
             localStorage.removeItem("sharedcameras");
             window.location = 'login.html';
         });
+        $("#btnLogout").bind("click", function() {
+            localStorage.removeItem("api_id");
+            localStorage.removeItem("api_key");
+            localStorage.removeItem("user");
+            localStorage.removeItem("timelapseCameras");
+            localStorage.removeItem("sharedcameras");
+            window.location = 'login.html';
+        });
     };
 
     var handleNewTimelapse = function() {
