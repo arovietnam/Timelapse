@@ -44,11 +44,14 @@ namespace TimelapseApi.Controllers
         /// Get list of timelapses with Recording mode enabled
         /// </summary>
         /// <returns>See sample response data</returns>
-        [Route("v1/timelapses")]
+        [Route("v1/timelapses/{api_id}/{api_key}")]
         [HttpGet]
-        public IQueryable<TimelapseModel> GetActive()
+        public IQueryable<TimelapseModel> GetActive(string api_id, string api_key)
         {
-            return TimelapseModel.Convert(TimelapseDao.GetList(null, null)).AsQueryable();
+            if (Settings.EvercamClientID == api_id && Settings.EvercamClientSecret == api_key)
+                return TimelapseModel.Convert(TimelapseDao.GetList(null, null)).AsQueryable();
+            else
+                throw new HttpResponseException(HttpStatusCode.Unauthorized);
         }
 
         /// <summary>
