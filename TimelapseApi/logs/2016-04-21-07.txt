@@ -1,0 +1,2 @@
+21/04/2016 07:44:22	TimelapseDao GetList() Cannot open server 'eh6zskjnbq' requested by the login. Client with IP address '103.255.5.21' is not allowed to access the server.  To enable access, use the Windows Azure Management Portal or run sp_set_firewall_rule on the master database to create a firewall rule for this IP address or address range.  It may take up to five minutes for this change to take effect.
+
