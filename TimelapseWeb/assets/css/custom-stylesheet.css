@@ -553,7 +553,7 @@ margin-bottom:35px;
     }
 }
 
-.tbl-tab thead tr{height:35px;border-bottom: 1px solid lightgrey;}
+.tbl-tab thead tr{border-bottom: 1px solid lightgrey;}
 .tbl-hd1{width: 28%; text-align: left; padding-bottom: 5px;padding-left:5px;}
 .padding-left10{padding-left:10px;}
 .margin-bottom2{margin-bottom:2px;}
@@ -685,6 +685,22 @@ body {
 
   .span-setting {
     width: 100% !important;
+  }
+
+  .tbl-hd2 {
+    padding-right: 5px;
+  }
+
+  .table td {
+    padding-right: 7px !important;
+  }
+
+}
+
+@media (max-width: 380px) {
+
+  .tbl-hd2 {
+    padding-right: 0px;
   }
 
 }
