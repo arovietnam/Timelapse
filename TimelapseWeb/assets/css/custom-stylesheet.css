@@ -687,12 +687,9 @@ body {
     width: 100% !important;
   }
 
-  .tbl-hd2 {
-    padding-right: 5px;
-  }
 
   .table td {
-    padding-right: 7px !important;
+    padding-right: 6px !important;
   }
 
 }
@@ -700,7 +697,7 @@ body {
 @media (max-width: 380px) {
 
   .tbl-hd2 {
-    padding-right: 0px;
+    padding: 0px 5px;
   }
 
 }
