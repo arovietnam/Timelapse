@@ -64,6 +64,8 @@ namespace EvercamMovieMaker
             Camera cam = new Camera();
             try
             {
+                string[] cred = getUserCreditional(archive.CameraId);
+                _evercam = new Evercam(cred[0], cred[1]);
                 //added condition to check movie and camera object must not empty
                 cam = _evercam.GetCamera(archive.CameraId);
             }
@@ -442,7 +444,6 @@ namespace EvercamMovieMaker
             }
         }
         
-
         public static bool SaveFile(string fileName, byte[] data)
         {
             if (data == null)
@@ -465,63 +466,31 @@ namespace EvercamMovieMaker
             }
         }
 
-        private static void connect1()
+        private static string[] getUserCreditional(string camera_id)
         {
-            string connectionString = String.Format("Provider=PostgreSQL OLE DB Provider;Data Source={0}:{1};" +
-                "location={4};User ID={2};password={3};timeout=1000;",
-                "ec2-176-34-237-141.eu-west-1.compute.amazonaws.com", "5682", "u6075i8hdo4gph",
-                "pbnc4i32sj1r022fiu1pf8ebbhi", "d3vugqi5rr36kj");
-
-            using (OleDbConnection connection = new OleDbConnection(connectionString))
-            {
-                // The insertSQL string contains a SQL statement that
-                // inserts a new row in the source table.
-                OleDbCommand command = new OleDbCommand("SELECT * FROM archives");
-
-                // Set the Connection to the new OleDbConnection.
-                command.Connection = connection;
-
-                // Open the connection and execute the insert command.
-                try
-                {
-                    connection.Open();
-                    command.ExecuteReader();
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine(ex.Message);
-                }
-                // The connection is automatically closed when the
-                // code exits the using block.
-            }
-        }
-        private static void connect() {
             DataSet ds = new DataSet();
             DataTable dt = new DataTable();
-            //postgres://u6075i8hdo4gph:pbnc4i32sj1r022fiu1pf8ebbhi@ec2-176-34-237-141.eu-west-1.compute.amazonaws.com:5682/d3vugqi5rr36kj
-            // PostgeSQL-style connection string
-            string connstring = String.Format("Server={0};Port={1};" +
-                "User Id={2};Password={3};Database={4};Integrated Security=true;",
-                "ec2-176-34-237-141.eu-west-1.compute.amazonaws.com", "5682", "u6075i8hdo4gph",
-                "pbnc4i32sj1r022fiu1pf8ebbhi", "d3vugqi5rr36kj");
+            string[] cred = new string[] {"", ""};
+            string connstring = Settings.ConnectionString;
+
             // Making connection with Npgsql provider
             NpgsqlConnection conn = new NpgsqlConnection(connstring);
             conn.Open();
             // quite complex sql statement
-            string sql = "SELECT * FROM archives";
+            string sql = "SELECT u.api_id,u.api_key FROM cameras c inner join users u on c.owner_id=u.id where c.exid='" + camera_id + "'";
             // data adapter making request from our connection
             NpgsqlDataAdapter da = new NpgsqlDataAdapter(sql, conn);
-            // i always reset DataSet before i do
-            // something with it.... i don't know why :-)
             ds.Reset();
-            // filling DataSet with result from NpgsqlDataAdapter
             da.Fill(ds);
-            // since it C# DataSet can handle multiple tables, we will select first
-            Console.WriteLine(ds.Tables[0]);
+            dt = ds.Tables[0];
+            foreach (DataRow dr in dt.Rows)
+            {
+                cred[0] = dr["api_id"].ToString();
+                cred[1] = dr["api_key"].ToString();
+            }
             // connect grid to DataTable
-            
-            // since we only showing the result we don't need connection anymore
             conn.Close();
+            return cred;
         }
     }
 
