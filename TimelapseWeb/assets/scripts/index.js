@@ -953,6 +953,8 @@ var Index = function () {
             $(container_id + " button.formButtonOk").removeClass("formButtonOk").addClass("formButtonEdit");
             $(container_id + " button.formButtonEdit").attr("data-val", id);
             $(container_id + " button.formButtonCancel").remove();
+            $(container_id + " button.formButtonDelete").show();
+            $(container_id + " button.formButtonDelete").attr("data-val", id);
             $(container_id + " div.camera-select").hide()
             handleFileupload1(container_id);
             $(container_id + " #ddlCameras0").append('<option class="" data-val="" selected="selected" value="' + $("#camera-code" + id).val() + '" >' + $("#camera-name" + id).val() + '</option>');
@@ -1002,6 +1004,13 @@ var Index = function () {
             });
         });
     }
+
+    $(".formButtonDelete").live("click", function () {
+      var timelapse_code = $("#timelapse-code" + $(this).attr("data-val")).val();
+      jConfirm("Are you sure? ", "Delete Timelapse", function (result) {
+        if (result) RemoveTimelapse(timelapse_code);
+      });
+    });
 
     $(".tab-a").live("click", function () {
         var clickedTab = $(this);
