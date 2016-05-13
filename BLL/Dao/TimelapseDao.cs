@@ -310,6 +310,32 @@ namespace BLL.Dao
             }
         }
 
+        public static List<Timelapse> GetAllDeleted()
+        {
+            try
+            {
+                string sql = "Select * FROM Timelapses WHERE IsDeleted=1 ORDER BY CreatedDT DESC";
+                var cmd = new SqlCommand { CommandText = sql, CommandType = CommandType.Text };
+                cmd.Connection = Connection.DbConnection;
+                Connection.OpenConnection();
+                var dr = GetListFromDataReader(cmd.ExecuteReader());
+                Connection.CloseConnection();
+                return dr;
+            }
+            catch (Exception ex)
+            {
+                if (Connection.DbConnection.State == ConnectionState.Closed)
+                    Utils.FileLog("TimelapseDao GetAllDeleted() " + ex.Message);
+                else
+                    Utils.FileLog(string.Format("TimelapseDao GetAllDeleted() <br />{1}", ex.Message));
+                return new List<Timelapse>();
+            }
+            finally
+            {
+                Connection.CloseConnection();
+            }
+        }
+
         public static int Insert(Timelapse timelapse)
         {
             string query = @"INSERT INTO [dbo].[Timelapses] " +

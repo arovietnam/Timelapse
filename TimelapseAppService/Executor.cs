@@ -124,8 +124,7 @@ namespace TimelapseAppService
                 }
 
                 Thread.Sleep(1000 * 60 * Settings.RecheckInterval);     // RecheckInterval in minutes
-                
-                //CheckStartDeletion();
+                CheckStartDeletion();
             }
         }
 
