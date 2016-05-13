@@ -701,3 +701,24 @@ body {
   }
 
 }
+
+.form-control .btn-green {
+  background-color: #0A840A;
+  color: white;
+}
+
+.form-control .btn-red {
+  background-color: #B30202;
+  color: white;
+  margin-left: 10px;
+}
+
+.form-control .btn-green:hover {
+  background-color: #2C3E50 !important;
+  color: white;
+}
+
+.form-control .btn-red:hover {
+  background-color: #2C3E50 !important;
+  color: white;
+}
