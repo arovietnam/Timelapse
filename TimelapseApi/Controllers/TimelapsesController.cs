@@ -167,6 +167,7 @@ namespace TimelapseApi.Controllers
         {
             Timelapse t = TimelapseModel.Convert(data, id);
             t.ServerIP = Request.RequestUri.Host;
+            t.TimelapsePath = Settings.BucketUrl;
             t.Status = (int)TimelapseStatus.Processing;
             t.Code = Utils.GeneratePassCode(10);
 

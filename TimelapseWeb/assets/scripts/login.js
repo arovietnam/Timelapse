@@ -2,7 +2,7 @@ var Login = function () {
     
     var createUserState = false;
     var exitRegister = false;
-    var EvercamApi = "https://api.evercam.io/v1";
+    var EvercamApi = "https://media.evercam.io/v1";
         
     var onBodyLoad = function () {
         if (getQueryStringByName("api_id") != null && getQueryStringByName("api_key") != null && getQueryStringByName("id") != null)

@@ -1,5 +1,5 @@
 var Index = function () {
-    var EvercamApi = "https://api.evercam.io/v1";
+    var EvercamApi = "https://media.evercam.io/v1";
     var timelapseApiUrl = "http://timelapse.evercam.io/v1/timelapses";
     var utilsApi = "http://timelapse.evercam.io/v1";
     var ApiAction = 'POST';

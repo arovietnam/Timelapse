@@ -41,5 +41,6 @@ namespace BLL.Entities
         public int WatermarkPosition { get; set; }
         public bool RecreateHls { get; set; }
         public bool StartRecreateHls { get; set; }
+        public string TimelapsePath { get; set; }
     }
 }

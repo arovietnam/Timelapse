@@ -339,9 +339,9 @@ namespace BLL.Dao
         public static int Insert(Timelapse timelapse)
         {
             string query = @"INSERT INTO [dbo].[Timelapses] " +
-                           "([UserId],[CameraId],[OauthToken],[Code],[Title],[Status],[Privacy],[FromDT],[ToDT],[DateAlways],[TimeAlways],[ServerIP],[TzId],[TimeZone],[SnapsInterval],[ModifiedDT],[EnableMD],[MDThreshold],[ExcludeDark],[DarkThreshold],[FPS],[IsRecording],[IsDeleted],[CreatedDT],[WatermarkImage],[WatermarkPosition]) " +
+                           "([UserId],[CameraId],[OauthToken],[Code],[Title],[Status],[Privacy],[FromDT],[ToDT],[DateAlways],[TimeAlways],[ServerIP],[TzId],[TimeZone],[SnapsInterval],[ModifiedDT],[EnableMD],[MDThreshold],[ExcludeDark],[DarkThreshold],[FPS],[IsRecording],[IsDeleted],[CreatedDT],[WatermarkImage],[WatermarkPosition],[TimelapsePath]) " +
                            "VALUES " +
-                           "(@UserId,@CameraId,@OauthToken,@Code,@Title,@Status,@Privacy,@FromDT,@ToDT,@DateAlways,@TimeAlways,@ServerIP,@TzId,@TimeZone,@SnapsInterval,@ModifiedDT,@EnableMD,@MDThreshold,@ExcludeDark,@DarkThreshold, @FPS,@IsRecording,@IsDeleted,@CreatedDT,@WatermarkImage,@WatermarkPosition) " +
+                           "(@UserId,@CameraId,@OauthToken,@Code,@Title,@Status,@Privacy,@FromDT,@ToDT,@DateAlways,@TimeAlways,@ServerIP,@TzId,@TimeZone,@SnapsInterval,@ModifiedDT,@EnableMD,@MDThreshold,@ExcludeDark,@DarkThreshold, @FPS,@IsRecording,@IsDeleted,@CreatedDT,@WatermarkImage,@WatermarkPosition,@TimelapsePath) " +
                            "SELECT CAST(scope_identity() AS int)";
             try
             {
@@ -371,8 +371,9 @@ namespace BLL.Dao
                 var p24 = new SqlParameter("@OauthToken", timelapse.OauthToken);
                 var p25 = new SqlParameter("@WatermarkImage", (timelapse.WatermarkImage.Equals("-")? "" : timelapse.WatermarkImage));
                 var p26 = new SqlParameter("@WatermarkPosition", timelapse.WatermarkPosition);
+                var p27 = new SqlParameter("@TimelapsePath", timelapse.TimelapsePath);
 
-                var list = new[] { p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16, p17, p18, p19, p20, p21, p22, p23, p24, p25, p26};
+                var list = new[] { p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16, p17, p18, p19, p20, p21, p22, p23, p24, p25, p26, p27};
                 var cmd = new SqlCommand { CommandText = query, CommandType = CommandType.Text };
                 cmd.Parameters.AddRange(list);
                 Connection.OpenConnection();
@@ -947,6 +948,8 @@ namespace BLL.Dao
                     timelapse.RecreateHls = dr.GetBoolean(dr.GetOrdinal("RecreateHls"));
                 if (!dr.IsDBNull(dr.GetOrdinal("StartRecreateHls")))
                     timelapse.StartRecreateHls = dr.GetBoolean(dr.GetOrdinal("StartRecreateHls"));
+                if (!dr.IsDBNull(dr.GetOrdinal("TimelapsePath")))
+                    timelapse.TimelapsePath = dr["TimelapsePath"].ToString();
 
                 timelapses.Add(timelapse);
             }

@@ -147,10 +147,10 @@ namespace TimelapseAppService
                 Camera camera = evercam.GetCamera(timelapse.CameraId);
 
                 // if camera found then start its process
-                if (camera.IsOnline || !isCreatedHls(timelapse.ID, camera.ID) || timelapse.RecreateHls)
+                if (camera.IsOnline || !isCreatedHls(timelapse, camera.ID) || timelapse.RecreateHls)
                 {
                     ProcessStartInfo process = new ProcessStartInfo(TimelapserExePath, timelapse.ID.ToString());
-                    process.UseShellExecute = true;
+                    process.UseShellExecute = false;
                     process.WindowStyle = ProcessWindowStyle.Hidden;    //ProcessWindowStyle.Normal;
                     
                     Process currentProcess = Process.Start(process);
@@ -218,7 +218,7 @@ namespace TimelapseAppService
                     Program.LastDeletion = DateTime.UtcNow.AddMinutes(1);
 
                     ProcessStartInfo process = new ProcessStartInfo(Settings.DeletionExePath);
-                    process.UseShellExecute = true;
+                    process.UseShellExecute = false;
                     process.WindowStyle = ProcessWindowStyle.Normal;
                     Process deletionProcess = Process.Start(process);
                 }
@@ -276,10 +276,11 @@ namespace TimelapseAppService
             return PathDest;
         }
 
-        protected bool isCreatedHls(int timelapse_id, string camera_exid)
+        protected bool isCreatedHls(Timelapse timelapse, string camera_exid)
         {
-            string downPath = Path.Combine(FilePath, camera_exid, timelapse_id.ToString(), "images");
-            string tsPath = Path.Combine(FilePath, camera_exid, timelapse_id.ToString(), "ts");
+            FilePath = timelapse.TimelapsePath + Settings.BucketName;
+            string downPath = Path.Combine(FilePath, camera_exid, timelapse.ID.ToString(), "images");
+            string tsPath = Path.Combine(FilePath, camera_exid, timelapse.ID.ToString(), "ts");
 
             if (Directory.Exists(downPath) && Directory.Exists(tsPath))
             {
@@ -326,7 +327,7 @@ namespace TimelapseAppService
             {
                 Utils.FileLog("TimelapseAppService Shutdown " + param);
                 ProcessStartInfo process = new ProcessStartInfo(Settings.ShutdownProcessPath, param);
-                process.UseShellExecute = true;
+                process.UseShellExecute = false;
                 process.WindowStyle = ProcessWindowStyle.Hidden;
 
                 Process currentProcess = Process.Start(process);

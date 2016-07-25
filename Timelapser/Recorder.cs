@@ -113,9 +113,10 @@ namespace Timelapser
                         ExitProcess();
                     }
                     Utils.TimelapseLog(timelapse, "Timelapser Initialized @ " + Utils.ConvertFromUtc(DateTime.UtcNow, timelapse.TimeZone) + " (" + timelapse.FromDT + "-" + timelapse.ToDT + ")");
-                    string imageFile = DownloadSnapshot();
+                    
                     int imagesCount = imagesDirectory.GetFiles("*.jpg").Length;
                     index = imagesCount;
+                    string imageFile = DownloadSnapshot();
                     // timelapse recorder is just initializing
                     if (!Program.Initialized)
                     {
@@ -284,15 +285,13 @@ namespace Timelapser
                 // instead of trying for X times, just try once other wise fetch from recording
                 // store and returns live snapshot on evercam
                 var snap1 = Program.Evercam.CreateSnapshot(timelapse.CameraId, Settings.EvercamClientName, true);
-                Utils.TimelapseLog(timelapse, "Image data retrieved from Camera: " + snap1.Data);
                 data = System.Convert.FromBase64String(snap1.Data.Replace("data:image/jpeg;base64,", ""));
             }
             catch (Exception x)
             {
                 Utils.TimelapseLog(timelapse, "Exception: Image data retrieved from Camera. " + x.Message);
-                EvercamV2.Snapshot snap = Program.Evercam.GetLatestSnapshot(timelapse.CameraId, true);
-                data = snap.ToBytes();
-                Utils.TimelapseLog(timelapse, "Latest Image data retrieved from Camera");
+                data = Program.Evercam.GetThumbnail(timelapse.CameraId, true);
+                Utils.TimelapseLog(timelapse, "Thumbnail Image data retrieved from Camera");
             }
             if (data != null && data.Length > 0)
             { }
@@ -445,7 +444,7 @@ namespace Timelapser
             bash.AppendLine("#!/bin/bash");
             var ffmpeg_command_480 = string.Format("ffmpeg -threads 1 -y -framerate {0} -start_number {3} -i {1}/%d.jpg -c:v libx264 -pix_fmt yuv420p -profile:v baseline -level 2.1 -maxrate 500K -bufsize 2M -crf 18 -r {0} -g 30 -s 480x270 {2}/low{4}.ts", frame_per_sec, imagesPath, tsPath, start_number, chunkIndex[0]);
             var ffmpeg_command_640 = string.Format("ffmpeg -threads 1 -y -framerate {0} -start_number {3} -i {1}/%d.jpg -c:v libx264 -pix_fmt yuv420p -profile:v baseline -level 3.1 -maxrate 1M -bufsize 3M -crf 18 -r {0} -g 72 -s 640x360 {2}/medium{4}.ts", frame_per_sec, imagesPath, tsPath, start_number, chunkIndex[1]);
-            var ffmpeg_command_1280 = string.Format("ffmpeg -threads 1 -y -framerate {0} -start_number {3} -i {1}/%d.jpg -c:v libx264 -pix_fmt yuv420p -profile:v high -level 3.2 -maxrate 4M -crf 18 -r {0} -g 100 {2}/high{4}.ts", frame_per_sec, imagesPath, tsPath, start_number, chunkIndex[2]);
+            var ffmpeg_command_1280 = string.Format("ffmpeg -threads 1 -y -framerate {0} -start_number {3} -i {1}/%d.jpg -c:v libx264 -pix_fmt yuv420p -profile:v baseline -level 3.2 -maxrate 3M -bufsize 4M -crf 18 -r {0} -g 100 {2}/high{4}.ts", frame_per_sec, imagesPath, tsPath, start_number, chunkIndex[2]);
             bash.AppendLine(ffmpeg_command_480);
             bash.AppendLine(ffmpeg_command_640);
             bash.AppendLine(ffmpeg_command_1280);
