@@ -151,10 +151,11 @@ namespace EvercamMovieMaker
                 archiveInfo.ID = archive_id;
                 archiveInfo.Status = status;
                 archiveInfo.Frames = total_frames;
-                evercam.UpdateArchive(archiveInfo);
+                var res = evercam.UpdateArchive(archiveInfo);
                 return true;
             }
             catch (Exception ex) {
+                Console.WriteLine(ex.ToString());
                 return false;
             }
         }
@@ -163,41 +164,55 @@ namespace EvercamMovieMaker
         {
             byte[] data = null;
             int index = 0;
-            long fromTimestamp = Utility.ToUnixTimestamp(userFromDate);
-            long toTimestamp = Utility.ToUnixTimestamp(userToDate);
-            List<Snapshot> snaps = evercam.GetSnapshots(camera.ID, fromTimestamp, toTimestamp, 10000, null);
-
-            foreach (Snapshot s in snaps)
+            while (userFromDate < userToDate)
             {
-                try
+                var diff_date = userToDate - userFromDate;
+                DateTime newToDate = DateTime.Now;
+                if (diff_date.Hours >= 1)
                 {
-                    Snapshot snap = evercam.GetSnapshot(camera.ID, s.CreatedAt.ToString(), true, 0);
-                    DateTime datetime = Utility.ToWindowsDateTime(snap.CreatedAt);
-                    DateTime snaptime = ConvertFromUtc(datetime, Utility.ToWindowsTimezone(camera.Timezone));
-                    if (snap != null && snaptime >= userFromDate)
+                    newToDate = userFromDate.AddHours(1);
+                }
+                else
+                {
+                    newToDate = userToDate;
+                }
+
+                long fromTimestamp = Utility.ToUnixTimestamp(userFromDate);
+                long toTimestamp = Utility.ToUnixTimestamp(newToDate);
+                List<Snapshot> snaps = evercam.GetSnapshots(camera.ID, fromTimestamp, toTimestamp, 3600, 1);
+
+                foreach (Snapshot s in snaps)
+                {
+                    try
                     {
-                        data = snap.ToBytes();
-
-                        //if (timestamp == "true")
-                        //    data = Utils.TimestampImage(data, snaptime.ToString(), Settings.WatermarkPostion);
-
-                        Console.WriteLine("Camera: " + camera.ID + ", " + index + " : " + snap.CreatedAt + " = " + snaptime);
-
-                        try
+                        Snapshot snap = evercam.GetSnapshot(camera.ID, s.CreatedAt.ToString(), "Evercam Proxy", true, 0);
+                        DateTime datetime = Utility.ToWindowsDateTime(snap.CreatedAt);
+                        DateTime snaptime = ConvertFromUtc(datetime, Utility.ToWindowsTimezone(camera.Timezone));
+                        if (snap != null && snaptime >= userFromDate && snaptime <= newToDate)
                         {
-                            if (SaveFile(Path.Combine(path, index + ".jpg"), data))
-                                index++;
-                        }
-                        catch (Exception x)
-                        {
-                            Console.WriteLine(" - ERR1 :" + x.Message);
+                            data = snap.ToBytes();
+
+                            //if (timestamp == "true")
+                            //    data = Utils.TimestampImage(data, snaptime.ToString(), Settings.WatermarkPostion);
+
+                            Console.WriteLine("Camera: " + camera.ID + ", " + index + " : " + snap.CreatedAt + " = " + snaptime);
+                            try
+                            {
+                                if (SaveFile(Path.Combine(path, index + ".jpg"), data))
+                                    index++;
+                            }
+                            catch (Exception x)
+                            {
+                                Console.WriteLine(" - ERR1 :" + x.Message);
+                            }
                         }
                     }
+                    catch (Exception x)
+                    {
+                        Console.WriteLine(" - ERR2 :" + x.Message);
+                    }
                 }
-                catch (Exception x)
-                {
-                    Console.WriteLine(" - ERR2 :" + x.Message);
-                }
+                userFromDate = newToDate;
             }
             return index;
         }

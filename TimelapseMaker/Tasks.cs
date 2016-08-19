@@ -184,7 +184,7 @@ namespace TimelapseMaker
                     {
                         int sec = interval * 60;
                         int range = Convert.ToInt32(sec / 2);
-                        Snapshot snap = evercam.GetSnapshot(camera.ID, time.ToString(), true, range);
+                        Snapshot snap = evercam.GetSnapshot(camera.ID, time.ToString(), "Evercam Proxy", true, range);
                         if (snap != null)
                         {
                             data = snap.ToBytes();
@@ -232,7 +232,7 @@ namespace TimelapseMaker
             {
                 try
                 {
-                    Snapshot snap = evercam.GetSnapshot(camera, s.CreatedAt.ToString(), true, 0);
+                    Snapshot snap = evercam.GetSnapshot(camera, s.CreatedAt.ToString(), "Evercam Proxy", true, 0);
                     DateTime datetime = Utility.ToWindowsDateTime(snap.CreatedAt);
                     DateTime snaptime = Utils.ConvertFromUtc(datetime, timezone);
                     if (snap != null && snaptime >= userFromDate)
@@ -282,7 +282,7 @@ namespace TimelapseMaker
                     snaps = evercam.GetSnapshots(camera, fromTimestamp, toTimestamp, 1, null);
                     if (snaps.Count > 0)
                     {
-                        Snapshot snap = evercam.GetSnapshot(camera, snaps[0].CreatedAt.ToString(), true, 0);
+                        Snapshot snap = evercam.GetSnapshot(camera, snaps[0].CreatedAt.ToString(), "Evercam Proxy", true, 0);
                         if (snap != null)
                         {
                             data = snap.ToBytes();
