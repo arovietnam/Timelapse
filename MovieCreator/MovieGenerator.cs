@@ -264,8 +264,8 @@ namespace EvercamMovieMaker
                     UseShellExecute = false,
                     FileName = Settings.FfmpegExePath,
                     Arguments =
-                        "-r 24 -i " + images_directory + @"\%d.jpg -c:v libx264 -r 24 " +
-                        " -profile:v main -preset slow -b:v 1000k -maxrate 1000k -bufsize 1000k -vf scale=-1:720 -pix_fmt yuv420p -y " + outputFile
+                        "-r 6 -i " + images_directory + @"\%d.jpg -c:v libx264 -r 6 " +
+                        " -preset slow -tune stillimage -bufsize 1000k -pix_fmt yuv420p -y " + outputFile
                 },
             };
             //p.PriorityClass = ProcessPriorityClass.High;
