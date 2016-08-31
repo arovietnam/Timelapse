@@ -442,9 +442,9 @@ namespace Timelapser
             tsPath = tsPath.Replace('\\', '/');
             var bash = new StringBuilder();
             bash.AppendLine("#!/bin/bash");
-            var ffmpeg_command_480 = string.Format("ffmpeg -threads 1 -y -framerate {0} -start_number {3} -i {1}/%d.jpg -c:v libx264 -pix_fmt yuv420p -profile:v baseline -level 2.1 -maxrate 500K -bufsize 2M -crf 18 -r {0} -g 30 -s 480x270 {2}/low{4}.ts", frame_per_sec, imagesPath, tsPath, start_number, chunkIndex[0]);
-            var ffmpeg_command_640 = string.Format("ffmpeg -threads 1 -y -framerate {0} -start_number {3} -i {1}/%d.jpg -c:v libx264 -pix_fmt yuv420p -profile:v baseline -level 3.1 -maxrate 1M -bufsize 3M -crf 18 -r {0} -g 72 -s 640x360 {2}/medium{4}.ts", frame_per_sec, imagesPath, tsPath, start_number, chunkIndex[1]);
-            var ffmpeg_command_1280 = string.Format("ffmpeg -threads 1 -y -framerate {0} -start_number {3} -i {1}/%d.jpg -c:v libx264 -pix_fmt yuv420p -profile:v baseline -level 3.2 -maxrate 3M -bufsize 4M -crf 18 -r {0} -g 100 {2}/high{4}.ts", frame_per_sec, imagesPath, tsPath, start_number, chunkIndex[2]);
+            var ffmpeg_command_480 = string.Format("ffmpeg -threads 1 -y -framerate {0} -start_number {3} -i {1}/%d.jpg -c:v libx264 -pix_fmt yuv420p -preset slow -tune stillimage -level 2.1 -maxrate 500K -bufsize 2M -crf 18 -r {0} -g 30 -s 480x270 {2}/low{4}.ts", frame_per_sec, imagesPath, tsPath, start_number, chunkIndex[0]);
+            var ffmpeg_command_640 = string.Format("ffmpeg -threads 1 -y -framerate {0} -start_number {3} -i {1}/%d.jpg -c:v libx264 -pix_fmt yuv420p -preset slow -tune stillimage -level 3.1 -maxrate 1M -bufsize 3M -crf 18 -r {0} -g 72 -s 640x360 {2}/medium{4}.ts", frame_per_sec, imagesPath, tsPath, start_number, chunkIndex[1]);
+            var ffmpeg_command_1280 = string.Format("ffmpeg -threads 1 -y -framerate {0} -start_number {3} -i {1}/%d.jpg -c:v libx264 -pix_fmt yuv420p -preset slow -tune stillimage -level 3.2 -maxrate 3M -bufsize 4M -crf 18 -r {0} -g 100 {2}/high{4}.ts", frame_per_sec, imagesPath, tsPath, start_number, chunkIndex[2]);
             bash.AppendLine(ffmpeg_command_480);
             bash.AppendLine(ffmpeg_command_640);
             bash.AppendLine(ffmpeg_command_1280);

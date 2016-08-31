@@ -213,10 +213,10 @@ namespace Timelapser
             frame_per_sec = 24;
             var bash = new StringBuilder();
             bash.AppendLine("#!/bin/bash");
-            var ffmpeg_command_480 = string.Format("ffmpeg -threads 1 -y -framerate {0} -i {1}/%d.jpg -c:v libx264 -pix_fmt yuv420p -profile:v baseline -level 2.1 -maxrate 500K -bufsize 2M -crf 18 -r {0} -g 30  -f hls -hls_time {3} -hls_list_size 0 -s 480x270 {2}/low.m3u8", frame_per_sec, imagesPath, tsPath, chunkFileSize);
-            var ffmpeg_command_640 = string.Format("ffmpeg -threads 1 -y -framerate {0} -i {1}/%d.jpg -c:v libx264 -pix_fmt yuv420p -profile:v baseline -level 3.1 -maxrate 1M -bufsize 3M -crf 18 -r {0} -g 72 -f hls -hls_time {3} -hls_list_size 0 -s 640x360 {2}/medium.m3u8", frame_per_sec, imagesPath, tsPath, chunkFileSize);
-            var ffmpeg_command_1280 = string.Format("ffmpeg -threads 1 -y -framerate {0} -i {1}/%d.jpg -c:v libx264 -pix_fmt yuv420p -profile:v baseline -level 3.2 -maxrate 3M -bufsize 4M -crf 18 -r {0} -g 100 -f hls -hls_time {3} -hls_list_size 0 {2}/high.m3u8", frame_per_sec, imagesPath, tsPath, chunkFileSize);
-            bash.AppendLine(ffmpeg_command_480);                                                                                                //high                          -bufsize 4M
+            var ffmpeg_command_480 = string.Format("ffmpeg -threads 1 -y -framerate {0} -i {1}/%d.jpg -c:v libx264 -pix_fmt yuv420p -preset slow -tune stillimage -level 2.1 -maxrate 500K -bufsize 2M -crf 18 -r {0} -g 30  -f hls -hls_time {3} -hls_list_size 0 -s 480x270 {2}/low.m3u8", frame_per_sec, imagesPath, tsPath, chunkFileSize);
+            var ffmpeg_command_640 = string.Format("ffmpeg -threads 1 -y -framerate {0} -i {1}/%d.jpg -c:v libx264 -pix_fmt yuv420p -preset slow -tune stillimage -level 3.1 -maxrate 1M -bufsize 3M -crf 18 -r {0} -g 72 -f hls -hls_time {3} -hls_list_size 0 -s 640x360 {2}/medium.m3u8", frame_per_sec, imagesPath, tsPath, chunkFileSize);
+            var ffmpeg_command_1280 = string.Format("ffmpeg -threads 1 -y -framerate {0} -i {1}/%d.jpg -c:v libx264 -pix_fmt yuv420p -preset slow -tune stillimage -level 3.2 -maxrate 3M -bufsize 4M -crf 18 -r {0} -g 100 -f hls -hls_time {3} -hls_list_size 0 {2}/high.m3u8", frame_per_sec, imagesPath, tsPath, chunkFileSize);
+            bash.AppendLine(ffmpeg_command_480);
             bash.AppendLine(ffmpeg_command_640);
             bash.AppendLine(ffmpeg_command_1280);
             File.WriteAllText(Path.Combine(UpPath, "build.sh"), bash.ToString());
